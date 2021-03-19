@@ -1,0 +1,72 @@
+<!doctype html>
+
+<html lang=es>
+	<head>
+		<title>Introducción</title>
+		<meta charset=utf-8>
+		<meta name=author content="Antonio Cepero">
+		<meta name=created content="2021-03-19">
+	</head>
+	<body>
+		<article>
+			<header>
+				<h1>Índice</h1>
+			</header>
+			<nav>
+				<ol>
+					<li><a href=#ejecutable>Qué es un ejecutable</a></li>
+				</ol> 
+			</nav>
+			<section id=Ejecutable>
+				<h1 id=ejecutable>Qué es un ejecutable</h1>
+				<p>Un ejecutable es un archivo binario que
+				la máquina reconoce como un programa. El
+				fichero binario podría ser una secuencia de
+				las instrucciones a ejecutar, escritas
+				directamente o traducidas desde un código
+				fuente en un lenguaje de programación. No
+				obstante, para mejorar su eficiencia, el
+				ejecutable se divide en varias secciones
+				o segmentos: texto, datos, montón (o
+				montículo) y pila.
+				<p>La sección de texto contiene el código
+				binario propio del programa, empezando,
+				normalmente, en la dirección de menor valor
+				(que podemos considerar que fuera la dirección
+				cero) y creciendo hasta que finaliza el código.
+				<p>A continuación, la sección de datos almacena
+				los valores globales: constantes y variables,
+				inicializadas o no. La sección de montón se
+				utiliza para asignar memoria dinámicamente,
+				conforme la necesita el programa: cuando se
+				solicita memoria al sistema para una
+				estructura de datos o se crea un objeto.
+				El espacio libre permite, como acabamos de
+				indicar, que el montón pueda crecer, según
+				lo necesite el programa. Por último, la
+				sección de pila sirve para mantener el flujo
+				de control de un programa estructurado:
+				almacena las direcciones de memoria desde
+				las que se realiza una llamada a procedimiento
+				o función (para el retorno) y reserva espacio
+				para almacenar las variables locales.
+				<p>El espacio libre, además de para el montón,
+				sirve también al propósito de crecimiento de
+				la pila, aunque, en este caso, la pila
+				empezará en la dirección de mayor valor
+				(podemos considerar que fuera la última
+				dirección de memoria disponible) y el
+				crecimiento será “hacia abajo”: se hará
+				restando. Según la implementación puede
+				haber otras secciones, que el montón
+				crezca hacia abajo (y la pila hacia arriba),
+				enlaces a las bibliotecas de carga dinámica,
+				pero éste es el esquema básico.
+
+			</section>
+			<footer>
+		<p>Programación de servicios y procesos</p>
+			</footer>
+		</article>
+	</body>
+</html>
