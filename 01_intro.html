@@ -6,63 +6,290 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-03-19">
+		<meta name=modified content="2021-06-14">
 	</head>
 	<body>
 		<article>
 			<header>
-				<h1>Índice</h1>
+				<h1>Introducción</h1>
 			</header>
 			<nav>
 				<ol>
 					<li><a href=#ejecutable>Qué es un ejecutable</a></li>
+					<li><a href=#proceso>Qué es un proceso</a></li>
+					<li><a href=#servicio>Qué es un servicio</a></li>
+					<li><a href=#estados>Estados de un proceso</a></li>
+					<li><a href=#hilos>Hilos</a></li>
+					<li><a href=#tiposp>Tipos de programación</a></li>
+					<li><a href=#jvm>La máquina virtual de Java</a></li>
 				</ol> 
 			</nav>
 			<section id=Ejecutable>
-				<h1 id=ejecutable>Qué es un ejecutable</h1>
-				<p>Un ejecutable es un archivo binario que
-				la máquina reconoce como un programa. El
-				fichero binario podría ser una secuencia de
-				las instrucciones a ejecutar, escritas
-				directamente o traducidas desde un código
-				fuente en un lenguaje de programación. No
-				obstante, para mejorar su eficiencia, el
-				ejecutable se divide en varias secciones
-				o segmentos: texto, datos, montón (o
-				montículo) y pila.
-				<p>La sección de texto contiene el código
-				binario propio del programa, empezando,
-				normalmente, en la dirección de menor valor
-				(que podemos considerar que fuera la dirección
-				cero) y creciendo hasta que finaliza el código.
-				<p>A continuación, la sección de datos almacena
-				los valores globales: constantes y variables,
-				inicializadas o no. La sección de montón se
-				utiliza para asignar memoria dinámicamente,
-				conforme la necesita el programa: cuando se
-				solicita memoria al sistema para una
-				estructura de datos o se crea un objeto.
-				El espacio libre permite, como acabamos de
-				indicar, que el montón pueda crecer, según
-				lo necesite el programa. Por último, la
-				sección de pila sirve para mantener el flujo
-				de control de un programa estructurado:
-				almacena las direcciones de memoria desde
-				las que se realiza una llamada a procedimiento
-				o función (para el retorno) y reserva espacio
-				para almacenar las variables locales.
-				<p>El espacio libre, además de para el montón,
-				sirve también al propósito de crecimiento de
-				la pila, aunque, en este caso, la pila
-				empezará en la dirección de mayor valor
-				(podemos considerar que fuera la última
-				dirección de memoria disponible) y el
-				crecimiento será “hacia abajo”: se hará
-				restando. Según la implementación puede
-				haber otras secciones, que el montón
-				crezca hacia abajo (y la pila hacia arriba),
-				enlaces a las bibliotecas de carga dinámica,
-				pero éste es el esquema básico.
+				<header>
+					<h1 id=ejecutable>Qué es un ejecutable</h1>
+				</header>
+<p>Un ejecutable es un archivo binario que la máquina reconoce como un
+programa. El fichero binario podría ser una secuencia de las instrucciones
+a ejecutar, escritas directamente o traducidas desde un código fuente en
+un lenguaje de programación. No	obstante, para mejorar su eficiencia, el
+ejecutable se divide en varias secciones o segmentos: texto, datos, montón
+(o montículo) y pila.
+<p>La sección de texto contiene el código binario propio del programa,
+empezando, normalmente, en la dirección de menor valor (que podemos
+considerar que fuera la dirección cero) y creciendo hasta que finaliza el
+código.
+<p>A continuación, la sección de datos almacena	los valores globales:
+constantes y variables, inicializadas o no. La sección de montón se utiliza
+para asignar memoria dinámicamente, conforme la necesita el programa: cuando
+se solicita memoria al sistema para una estructura de datos o se crea un
+objeto. El espacio libre permite, como acabamos de indicar, que el montón
+pueda crecer, según lo necesite el programa. Por último, la sección de pila
+sirve para mantener el flujo de control de un programa estructurado:
+almacena las direcciones de memoria desde las que se realiza una llamada a
+procedimiento o función (para el retorno) y reserva espacio para almacenar
+las variables locales.
+<p>El espacio libre, además de para el montón, sirve también al propósito de
+crecimiento de la pila, aunque, en este caso, la pila empezará en la dirección
+de mayor valor (podemos considerar que fuera la última dirección de memoria
+disponible) y el crecimiento será "hacia abajo": se hará restando. Según la
+implementación puede haber otras secciones, que el montón crezca hacia abajo
+(y la pila hacia arriba), enlaces a las bibliotecas de carga dinámica... pero
+éste es el esquema básico.
+<p>Dentro de la memoria principal, el S.O. se encarga de hacer creer a cada
+programa que es el único que se está ejecutando. Esto lo realiza mediante la
+denominada segmentación de memoria: asignar a cada programa un espacio de
+memoria propio. La segmentación permite que varios programas compartan la
+memoria sin que cualquiera de ellos pueda utilizar la memoria reservada a
+otro. El direccionamiento se realiza mediante una técnica denominada
+"desplazamiento". Cada dirección se representa mediante dos valores:
+número de segmento (s) y desplazamiento dentro del segmento (d); el
+procesador mantiene un registro de la dirección "s" en la que empieza cada
+segmento, con lo que el programa solo tiene que trabajar con "d".
 
+
+			</section>
+			<section id=Proceso>
+				<header>
+					<h1 id=proceso>¿Qué es un proceso?</h1>
+				</header>
+				<p>
+Un proceso es en esencia un programa en ejecución. Cada proceso tiene
+asociado un espacio de direcciones, una lista de ubicaciones de memoria
+que va desde algún mínimo (generalmente 0) hasta cierto valor máximo, donde
+el proceso puede leer y escribir información. <span class=cita>[…] Un
+proceso es un recipiente que guarda toda la información necesaria para
+ejecutar un programa. <span class=autor>Tanenbaum</span></span>
+Para mantener los distintos programas que se ejecutan en el sistema, el S.O.
+mantiene una tabla de procesos, un vector con una entrada por proceso
+denominada PCB (Process Control Block – bloque de control del proceso),
+que contiene la información relevante acerca del proceso: contador de
+programa, apuntador de pila… y datos propios de identificación para el S.O.
+como un identificador, el identificador del proceso padre, ficheros abiertos,
+datos estadísticos, etc.
+<p>Un proceso puede crearse en el arranque del sistema o, porque desde otro
+proceso, se solicita al S.O. que lo cree. Vamos a considerar solo la segunda
+opción. Para crear el proceso (hijo), el que ya está en ejecución (proceso
+padre) realiza una llamada al sistema (invoca una función del S.O.) para
+crearlo: <span class=llamadaSO>fork</span>. Dicha llamada crea un clon exacto
+del proceso que la realiza: crea un copia de su PCB, modificando los datos
+pertinentes. Ahora, los dos procesos, padre e hijo, tienen los mismos datos
+de memoria, ficheros, etc. Normalmente, la creación de un proceso hijo se
+realiza para ejecutar un programa diferente (ejecutando una llamada a
+<span class=llamadaSO>execve</span>) y que éste modifique esos datos, aunque
+puede redireccionar la entrada y la salida. En <i>Windows</i>, se utiliza
+una llamada a la función <span class=llamadaSO>CreateProcess</span></b>.
+<p>Una vez que el proceso es creado, padre e hijo tienen espacios de memoria
+(segmentos) diferentes de manera que, si alguno modifica algo, dicha
+modificación no es visible para el otro. En algunas implementaciones pueden
+compartir la sección de texto, dado que no debe modificarse.
+			</section>
+
+			<section id=Servicio>
+				<header>
+					<h1 id=servicio>Qué es un servicio</h1>
+				</header>
+<p>Como decíamos, un proceso puede crearse en el arranque del sistema
+operativo. Generalmente, se crean varios procesos: algunos de ellos se
+denominan de <em>segundo plano</em>, es decir, que no están asociados a un
+usuario específico (no interactúan con él/ella) sino con una función
+específica. Estos procesos en segundo plano, en general, se conocen como
+demonios (daemons), existiendo docenas de los mismos en los sistemas
+operativos modernos.
+<p>Los sistemas modernos, normalmente, utilizan la arquitectura
+cliente-servidor, un modelo de diseño de software que divide la gestión
+de los recursos (programa servidor) de la utilización de los mismos
+(programa cliente). Aunque el servidor puede ser un programa cualquiera,
+lo normal es que éste no interactúe con el usuario, por lo que lo más común
+es que se ejecute como demonio; el nombre del programa suele añadir la letra
+"d" al final.
+<p>En el paradigma cliente-servidor, el cliente es la parte que, normalmente,
+inicia la comunicación y el servidor recibe la petición o solicitud del
+cliente, la procesa y devuelve el resultado (respuesta). La arquitectura
+cliente-servidor genérica se denomina de dos niveles: el cliente es el nivel
+1 y el servidor el nivel 2. A su vez, el servidor puede comunicarse con
+otro servidor, adoptando la figura de cliente. Este encadenamiento de
+clientes y servidores se denomina arquitectura de n-niveles, siendo la más
+frecuente la de 3 niveles.
+
+			</section>
+
+			<section id=Estados>
+				<header>
+					<h1 id=estados>Estados de un proceso</h1>
+				</header>
+<p>En un mundo ideal, nuestro sistema dispondría de un número de
+procesadores superior siempre al de programas que se ejecutan, por lo que
+cada programa podría ejecutarse en un procesador diferente. Pero, de forma
+análoga a cómo la memoria es segmentada para que varios ejecutables puedan
+trabajar en la misma, nuestro sistema dispone de un número de procesadores
+inferior al de programas, tal vez solo uno, y debemos organizar un modelo
+para que todos esos programas puedan "compartir" el/los procesador/es.
+<p>A la mayoría de la gente le cuesta hacer varias cosas a la vez. Por eso,
+en el diseño de sistemas, se utiliza un modelo conceptual en el que todos
+esos programas se asocian a procesos secuenciales. El proceso es así una
+instancia de un programa que contiene los valores actuales de contador de
+programa, memoria, etc.: su PCB. Conceptualmente, cada proceso tiene una CPU
+virtual en la que se ejecuta. La idea reside en que, aunque solo haya un
+contador de programa (real) por CPU, cada proceso tiene un contador de
+programa lógico de manera que, cuando el proceso debe ejecutarse, el contador
+de programa real toma el valor del contador de programa lógico de ese proceso
+–y sucede lo mismo con el resto de valores del PCB necesarios para la
+ejecución-. Este método de conmutación rápida de un proceso a otro se denomina
+<a target=_blank href=https://es.wikipedia.org/wiki/Multiprogramaci%C3%B3n>multiprogramación</a>.
+<p>Así, dado que nuestro S.O. trabaja con procesos, puede organizarlos en tres estados:
+<dl>
+	<dt>En ejecución
+	<dd>Está utilizando la CPU (o una de ellas) en ese instante
+	<dt>Listo
+	<dd>Podría estar usando la CPU (o una de ellas) pero no puede
+		porque está en uso por otro proceso.
+	<dt>Bloqueado:
+	<dd>No puede ejecutarse porque está a la espera de que ocurra
+		un acontecimiento concreto (habitualmente, un evento de E/S)
+</dl>
+<p>En la figura pueden verse las posibles transiciones entre estos tres estados.
+<p>Con este modelo es mucho más simple entender cómo funciona el S.O.: algunos
+procesos ejecutan programas interactivos, otros forman parte del sistema y
+responden peticiones de otros procesos… En general, los procesos "hijo" (en
+el momento de su creación) obtienen el estado "listo" y, posteriormente, un
+proceso especial denominado
+<a target=_blank href=https://es.wikipedia.org/wiki/Planificador>planificador</a>
+decide que debe pasar al estado "en ejecución", bien porque un proceso que
+se encontraba en dicho estado ha pasado al estado "bloqueado", bien porque
+llevaba mucho tiempo utilizando la CPU y dicho planificador ha decidido que
+debía pasar al estado "listo".
+
+			</section>
+
+			<section id=Planificacion>
+				<header id=planificacion>
+				</header>
+<p>En los primeros sistemas, que tenían un procesamiento por lotes, el
+algoritmo de planificación era muy sencillo: se ejecutaba el siguiente
+trabajo a realizar. En los sistemas multiprogramados, sin embargo, esto
+se vuelve más complejo por la cantidad de programas y/o usuarios que pueden
+estar haciendo (o esperando hacer) uso de la CPU.
+<p>Además, la conmutación es una tarea con un coste elevado. Primero, debe
+haber un cambio de contexto del modo del usuario al modo núcleo. El núcleo
+debe ahora guardar el estado (PCB) del proceso actual en la tabla de procesos:
+esto incluye el contador de programa, otros registros de la CPU y, en la
+mayoría de sistemas, el mapa de memoria del proceso (las direcciones de
+memoria que ocupa). A continuación, se ejecuta el algoritmo de planificación
+para elegir cuál es el nuevo proceso que debe ejecutarse. Y realizar el
+proceso inverso: copiar el mapa de memoria, los registros y el contador de
+programa. Y sin olvidar que toda la
+<a target=_blank href=https://es.wikipedia.org/wiki/Cach%C3%A9_(inform%C3%A1tica)>memoria caché</a>
+ha quedado invalidada,
+tanto al entrar en modo núcleo como para el nuevo proceso, por lo que debe
+cargarse de la memoria principal en dos ocasiones.
+<p>Podemos dividir los algoritmos de planificación en dos categorías: no
+apropiativos (nonpreemptive) y apropiativos. Los primeros permiten que los
+procesos se ejecutan hasta que se bloquean o hasta que liberan la CPU de
+forma voluntaria, no existiendo un algoritmo de planificación propiamente
+dicho. En el caso de los segundos, si no se produce una de las acciones antes
+comentadas, el planificador toma el control tras un período de tiempo
+determinado y selecciona otro proceso (de aquellos en estado "listo").
+<p>Se han propuesto múltiples métodos de planificación aunque no vamos a
+tratarlos aquí. Para más información, se puede visitar la página de Wikipedia
+(en inglés) sobre
+<a target=_blank href=https://en.wikipedia.org/wiki/Scheduling_(computing)>
+planificación</a>.
+
+			</section>
+
+			<section id=Hilos>
+				<header>
+					<h1 id=hilos>Hilos</h1>
+				</header>
+<p>Tradicionalmente, cada proceso hace una única cosa. A veces, sin embargo,
+la misma aplicación debe realizar varias actividades a la vez, algunas de las
+cuales pueden bloquearse en un momento dado. En esas ocasiones puede
+interesarnos tener varios flujos de control diferentes, todos en el mismo
+programa. Pero… ese era el propósito de tener procesos, ¿para qué podríamos
+querer tener (sub)procesos dentro de un proceso?
+<p>Nuestro interés reside en que estos miniprocesos o <b>hilos</b>
+(<em>threads</em>)
+tienen la habilidad de utilizar un espacio de direcciones compartido, con
+todos los datos que contengan. Otra característica interesante es que el
+coste de crearlos (y destruirlos) es muy inferior al de crear (y destruir)
+procesos: entre 10 y 100 veces. En tercer lugar, un bloqueo en E/S no afecta
+a todo el proceso ya que otro hilo puede seguir ejecutándose. Y por último,
+en máquinas con múltiples CPU, se puede lograr un paralelismo real.
+<p>Dado que todos los hilos de un proceso comparten su mismo espacio de
+direcciones, cualquiera de ellos puede acceder a los datos o incluso la pila
+de otro hilo. No existe protección entre hilos porque no es posible, pero
+tampoco es necesaria: se supone que se crean para cooperar. El PCB de todos
+los hilos será el mismo (dado que corresponden al mismo proceso) pero cada
+uno de ellos debe tener su propio registro de datos, denominado <b>TCB</b>
+(<b><i>Thread Control Block</i></b> – bloque de control del hilo) que
+contendrá su propio contador de programa, registros del procesador, pila
+y estado (de ejecución).
+<p>Al hablar sobre los procesadores actuales, se escuchan mucho los términos
+<em>cores</em> y <em>threads</em> debido a una tecnología denominada
+<b><i>hyper-threading</i></b>. No deben confundirse los conceptos que
+estamos estudiando con esta tecnología. HT se basa en la duplicación de
+algunos recursos del procesador –que no incluyen las unidades de cómputo-
+para que, si una de dichas unidades se debe detener, otro hilo de ejecución
+pueda utilizar unidades que están desocupadas. Esto proporciona, de cara al
+sistema operativo, la perspectiva de que tiene dos procesadores lógicos.
+Por ello, para nosotros, es como si el sistema tuviera dos procesadores,
+al margen de que sean reales (<i>cores</i>) o lógicos (<i>threads</i>).
+
+			</section>
+
+			<section>
+				<header>
+					<h1 id=tiposp>Tipos de programación</h1>
+				</header>
+<p>Ahora que sabemos cómo gestiona un sistema operativo el que puedan
+ejecutarse diferentes cosas en una misma máquina, vamos a explicar la
+diferencia entre programación concurrente, paralela y distribuida.
+<p>Programación concurrente es aquella en la que se ejecutan múltiples
+tareas, sea a través de un conjunto de procesos o de hilos, creados por
+un único programa. Es lo que antes hemos denominado multiprogramación.
+<p>La programación paralela es una técnica en la que varias instrucciones
+pueden ejecutarse de forma simultánea. Su principio básico es que los
+problemas pueden resolverse dividiéndolos en partes más pequeñas que pueden
+ejecutarse de forma concurrente. ¿La programación paralela es entonces
+programación concurrente? En realidad, la programación concurrente es un
+modo de programación paralela que enfatiza el hecho de la interacción entre
+tareas, tareas que trabajan sobre un mismo recurso. Podríamos decir que
+programación paralela se produce cuando podemos realizar tareas que son
+independientes unas de las otras; mientras que concurrente es aquella en la
+que existe alguna dependencia entre las mismas, que las tareas deben acceder
+a recursos que comparten, haciéndolo de forma ordenada. Los sistemas actuales,
+en la mayoría de los casos, disponen de varios procesadores, por lo que ha
+aumentado el interés en la programación paralela.
+La programación distribuida es una forma de programación paralela (y/o
+concurrente) en la que se utilizan diferentes máquinas, conectadas por
+algún tipo de red de comunicaciones. Es decir, esas partes más pequeñas que
+pueden ejecutarse simultáneamente se reparten entre máquinas independientes,
+pero comunicadas.
+			</section>
+			<section id=JVM>
+				<header>
+					<h1 id=jvm>La máquina virtual de Java</h1>
+				</header>
 			</section>
 			<footer>
 		<p>Programación de servicios y procesos</p>
