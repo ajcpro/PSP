@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-03-19">
-		<meta name=modified content="2021-06-14">
+		<meta name=modified content="2021-06-24">
 	</head>
 	<body>
 		<article>
@@ -34,6 +34,11 @@ a ejecutar, escritas directamente o traducidas desde un código fuente en
 un lenguaje de programación. No	obstante, para mejorar su eficiencia, el
 ejecutable se divide en varias secciones o segmentos: texto, datos, montón
 (o montículo) y pila.
+<div class=image id=img_01_01>
+	<img src=imagenes/01_01_ejecutable.png
+	     alt="Secciones de un ejecutable">
+	<p class=caption>Formato de un ejecutable en memoria
+</div>
 <p>La sección de texto contiene el código binario propio del programa,
 empezando, normalmente, en la dirección de menor valor (que podemos
 considerar que fuera la dirección cero) y creciendo hasta que finaliza el
@@ -65,6 +70,12 @@ otro. El direccionamiento se realiza mediante una técnica denominada
 número de segmento (s) y desplazamiento dentro del segmento (d); el
 procesador mantiene un registro de la dirección "s" en la que empieza cada
 segmento, con lo que el programa solo tiene que trabajar con "d".
+<div class=image id=img_01_02>
+	<img src=imagenes/01_02_segmentacion.png
+	     alt="Segmentación de la memoria">
+	<p class=caption>División de la memoria en segmentos para ejecutar
+	varios programas simultáneamente
+</div>
 
 
 			</section>
@@ -122,6 +133,11 @@ de los recursos (programa servidor) de la utilización de los mismos
 lo normal es que éste no interactúe con el usuario, por lo que lo más común
 es que se ejecute como demonio; el nombre del programa suele añadir la letra
 "d" al final.
+<div class=image id=img_01_03>
+	<img src=imagenes/01_03_servicio.png
+	     alt="Paradigma cliente-servidor">
+	<p class=caption>Paradigma cliente-servidor en dos niveles
+</div>
 <p>En el paradigma cliente-servidor, el cliente es la parte que, normalmente,
 inicia la comunicación y el servidor recibe la petición o solicitud del
 cliente, la procesa y devuelve el resultado (respuesta). La arquitectura
@@ -167,6 +183,13 @@ ejecución-. Este método de conmutación rápida de un proceso a otro se denomi
 	<dd>No puede ejecutarse porque está a la espera de que ocurra
 		un acontecimiento concreto (habitualmente, un evento de E/S)
 </dl>
+<div class=image id=img_01_04>
+	<img src=imagenes/01_04_estados_proceso.png
+	     alt="Estados de un proceso">
+	<p class=caption>Estado de un proceso en el S.O.
+	<br>Fuente: Sistemas operativos. Diseño e implementación.
+	Andrew S. Tanenbaum. 1987
+</div>
 <p>En la figura pueden verse las posibles transiciones entre estos tres estados.
 <p>Con este modelo es mucho más simple entender cómo funciona el S.O.: algunos
 procesos ejecutan programas interactivos, otros forman parte del sistema y

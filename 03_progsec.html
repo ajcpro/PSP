@@ -11,11 +11,14 @@
 	<body>
 		<article>
 			<header>
-				<h1>programación segura</h1>
+				<h1>Programación segura</h1>
 			</header>
 			<nav>
 				<ol>
 					<li><a href=#intro>Introducción</a></li>
+					<li><a href=#amenaza>Amenazas</a></li>
+					<li><a href=#situacion>Situación de error</a></li>
+					<li><a href=#excepciones>Excepciones en Java</a></li>
 				</ol> 
 			</nav>
 			<section id=Introduccion>
@@ -117,10 +120,120 @@ producir sobre la información, las amenazas se clasifican en cuatro grupos:
 					<h1 id=situacion>Situación de error</h1>
 				</header>
 <p>Las situaciones de error se producen por diferentes causas, como una
-<em>implmentación incorrecta</em>, cuando el código no se ajusta a las
+<em>implementación incorrecta</em>, cuando el código no se ajusta a las
 especificaciones, una <em>petición de objeto inapropiada</em>, como un
 índice no válido (en un vector) o una referencia nula, o que el estado
 de un objeto sea inapropiado o inexistente.
+<p>Pero no siempre es devido a un error de programación. Pueden producirse
+errores en el entorno, como la introduccion errónea de los datos o que se
+produzca una interrupción en las comunicaciones; también, durante el
+procesamiento de ficheros como que no exista el archiuvo al que desamos
+acceder o que los permisos de acceso sean inadecuados.
+<h2>Programción defensiva</h2>
+Estos acontecimientos provocan que, para garantizar el correcto funcionamiento
+de las aplicaciones, deba utilizarse la técnica de la
+<a target=_blank href=https://es.wikipedia.org/wiki/Programaci%C3%B3n_defensiva>programación defensiva</a>,
+que conlleva la incorporación de un gran número de comprobaciones, con la
+consiguiente merma en rendimiento.
+<p>Pero, ¿qué cosas deben ser comprobadas? ¿Debe tratarse el fallo en el 
+punto en que se produce o se informa de los errores al código que invocó
+a aquél en que se ha producido? ¿cómo debe tratarse el error? Si el error
+no se trata, ¿cómo se informa del mismo? ¿Puede el código anticiparse al
+fallo? Y si lo hace, ¿cuándo?
+<p>Veamos un ejemplo sencillo. Supongamos que tenemos una agenda;
+identificamos las entradas en la misma mediante algún tipo de clave que
+podemos utilizar para localizarlas. Queremos borrar un registro: localizamos
+el mismo a través de su clave y, a continuación, lo eliminamos:
+<pre style=code>
+	public void eliminar ( String clave ) {
+		Contacto contacto = agenda.buscar(clave);
+		agenda.borrar(contacto);
+	}
+</pre>
+<p>Se produce un error: por ejemplo, que el registro no existe. ¿Quién tiene
+la culpa? En general, es preferible anticiparse a quejarse.
+<h3>Comprobación de clave</h3>
+<p>Los argumentos son una vulnerabilidad:
+<ul>
+	<li>Inicializan el estado en un constructor
+	<li>Contribuyen al comportamiento en un método
+</ul>
+<p>La comprobación de los argumentos es una medida defensiva:
+<pre style=code>
+	public void eliminar ( String clave ) {
+		Contacto contacto;
+		if ( agenda.existe(clave) ) {
+			contacto = agenda.buscar(clave);
+			agenda.borrar(contacto);
+		}
+	}
+</pre>
+<p>En este caso, comprobamos si existe el registro que deseamos eliminar
+antes de proceder al borrado.
+<h3>Información del error</h3>
+<p>El modelo clásico para informar de que se ha producido un error es la
+devolución de un diagnóstico. Por ejemplo, el método puede ser implementado
+como una función booleana que devuelva verdadero solo si la operación se ha
+realizado con éxito:
+<pre style=code>
+	public boolean eliminar ( String clave ) {
+		Contacto contacto;
+		if ( agenda.existe(clave) ) {
+			contacto = agenda.buscar(clave);
+			agenda.borrar(contacto);
+			return true;
+		} else
+			return false;
+	}
+</pre>
+<p>La salida de la función deberá ser comprobada por el método que la invocó:
+<pre style=code>
+	if ( ! objeto.metodo(parametros) ) {
+		// tratar error
+	} else {
+		// código normal
+	}
+</pre>
+<p>Este es un método sencillo pero que complica el código innecesariamente
+debido a la anidación. Además, pueden producirse otros tipos de errores de
+ejecución que no son capturables.
+<p>Los lenguajes modernos, especialmente los que soportan la programación
+orientada al objeto. incorporan un mecanismo de gestión del error a través
+de las denominadas
+<a target=_blank href=https://es.wikipedia.org/wiki/Manejo_de_excepciones>excepciones</a>.
+<p>La estructura del código en este caso, como antes, tiene dos partes, la
+del método invocado, en el que se produce el error, y el que invoca, en el
+que el error puede ser tratado. En el primero, cuando se produce el error,
+bien sea porque se incumple alguna condición o porque hay algún error en el
+entorno, se indica la excepción y se finaliza la ejecución del método. En el
+segundo, se codifican dos partes diferenciadas: la secuencia de ejecución
+normal, por un lado, y el tratamiento del error, por el otro.
+			</section>
+			<section id=Excepciones>
+				<header>
+					<h1 id=excepciones>Excepciones en Java</h1>
+				</header>
+<p>El lenguaje de programación
+<a target=_blank href= https://docs.oracle.com/javase/specs/jls/se8/html/jls-11.html>Java</a>
+hace uso de las excepciones para indicar cuándo se ha producido un error.
+Siguiendo la filosofía del lenguaje, una excepción es un objeto; el objeto
+será una instancia de la clase
+<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Throwable.html>Throwable</a>
+o de alguna de sus subclases, que transporta información desde el punto en
+el que se ha producido el error. Como subclases podemos encontrar
+<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Error.html>Error</a> y
+<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Exception.html>Exception</a>. La primera es utilizada por la
+propia máquina virtual de Java y hace referencia a errores irrecuperables
+que no se tratan. La segunda hace referencia a errores que el programador
+debería tratar.
+<p>Así pues, nuestras
+<a target=_blank href=https://docs.oracle.com/javase/tutorial/essential/exceptions/index.html>excepciones</a>,
+serán instancias de la clase <em>Exception</em>. Además, de éstas,
+existen también dos tipos: las que no requieren comprobación y las que
+deben comprobarse. Las primeras se corresponden con errores de ejecución
+durante el funcionamiento normal de la JVM y se identifican con la superclase
+<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/RuntimeException.html>RuntimeException</a>. El resto son
+conocidas como <em>checked exceptions</em>
 			</section>
 			<footer>
 		<p>Programación de servicios y procesos</p>
