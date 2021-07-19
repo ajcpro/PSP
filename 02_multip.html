@@ -6,7 +6,8 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-03-21">
-		<meta name=modified content="2021-06-14">
+		<meta name=modified content="2021-07-19">
+		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
 		<article>
@@ -30,27 +31,33 @@ procesos y/o hilos, en función del soporte que proporcionen a la
 multiprogramción.
 <p>En el caso que nos ocupa, los procesos, estos son creados, tradicionalmente
 , siguiendo el modelo de UNIX: utilizan una llamada al sistema denominada
-<em>fork</em>. Esta llamada al sistema crea una copia idéntica del proceso
+<span class=llamadaSO>fork</span>. Esta llamada al sistema crea una copia
+idéntica del proceso
 que la invoca (el proceso padre), diferenciándose únicamente del proceso
 creado (el proceso hijo) en el valor de retorno de dicha llamada al sistema.
 Esto implica que el proceso hijo tiene acceso a los mismos recursos que el
 proceso padre como, por ejemplo, los ficheros que tiene abiertos.
 Si se desea que ejecutar un programa diferente, el método consiste en realizar
-la llamada a <em>
+la llamada a <span class=llamadaSO>
 <a target=_blank href=https://es.wikipedia.org/wiki/Bifurcaci%C3%B3n_(sistema_operativo)>
-fork</a></em> y, posteriormente, invocar a alguna de las funciones
-de la familia <em>exec</em>, interfaces de la primitiva
-<a target=_blank href=https://es.wikipedia.org/wiki/Execve>execve</a>.
+fork</a></span> y, posteriormente, invocar a alguna de las funciones
+de la familia <span class=llamadaSO>exec</span>, interfaces de la primitiva
+<span class=llamadaSO>
+<a target=_blank href=https://es.wikipedia.org/wiki/Execve>execve</a></span>.
 
-<p>Java incorpora una clase <em>Process</em>, que proporciona control sobre
+<p>Java incorpora una clase <span class=clase>Process</span>, que proporciona
+control sobre
 procesos (programas) nativos del S.O.: dispone de métodos para controlar la
 E/S del proceso, esperar a que termine, comprobar su código de finalización
 y matarlo. Principalmente, se utiliza como una superclase del tipo de objetos
-creados por <em>exec()</em> en la clase Runtime o por <em>start()</em> en la
-clase <em>ProcessBuilder</em>.
-La clase <em>Runtime</em> encapsula el entorno de ejecución. No es posible
+creados por <span class=metodo>exec()</span> en la clase Runtime o por
+<span class=metodo>start()</span> en la
+clase <span class=clase>ProcessBuilder</span>.
+La clase <span class=metodo>Runtime</span> encapsula el entorno de ejecución.
+No es posible
 instanciar un objeto de la clase. No obstante, resulta posible obtener una
-referencia al objeto actual usando el método estatico <em>getRuntime()</em>.
+referencia al objeto actual usando el método estatico
+<span class=metodo>getRuntime()</span>.
 Una vez obtenida dicha referencia se pueden utilizar sus diferentes métodos
 para controlar el estado y comportamiento de la máquina virtual de Java.
 El código inseguro provoca que se eleve una excepción de seguridad si invoca
@@ -62,16 +69,19 @@ a alguno de los métodos de la clase.
 				<header>
 					<h1 id=creacion>Creando un proceso</h1>
 				</header>
-<p>Para ejecutar otro programa no es necesario usar <em>fork</em>, pudiendose
-utilizar diferentes formatos del método <em>exec()</em>, indicando el nombre
+<p>Para ejecutar otro programa no es necesario usar
+<span class=metodo>fork</span>, pudiendose
+utilizar diferentes formatos del método <span class=metodo>exec()</span>,
+indicando el nombre
 del programa y los argumentos del mismo. El método
-devuelve un objeto <em>Process</em>, que se puede utilizar para controlar cómo
+devuelve un objeto <span class=clase>Process</span>, que se puede utilizar
+para controlar cómo
 interacciona el programa en Java con el nuevo proceso. Veamos cómo es posible
 ejecutando el bloc de notas de Windows. En primer lugar, obtenemos una
 referencia al entorno de ejecución actual:
-<p class=code><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Runtime.html>Runtime</a> r = Runtime.<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Runtime.html#getRuntime()>getRuntime</a>();
+<p class=code><span class=clase><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Runtime.html>Runtime</a></span> r = Runtime.<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Runtime.html#getRuntime()>getRuntime</a>()</span>;
 <p>A continuación, podemos invocar el método <em>exec()</em>:
-<p class=code><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html>Process</a> p = r.<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Runtime.html#exec(java.lang.String)>exec</a>("notepad");
+<p class=code><span class=clase><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html>Process</a></span> p = r.<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Runtime.html#exec(java.lang.String)>exec</a>("notepad")</span>;
 <p>El siguiente ejemplo muestra un programa sencillo que ejecuta el bloc de
 notas.
 <pre class=code>
@@ -96,13 +106,13 @@ requeriría una cadena como:
 <p class=code>Process p = r.exec("C:\\Program Files\\Windows Photo Viewer\\ImagingDevices");
 <p>El formato utilizado en el ejemplo es el más simple, aunque existen otros.
 El objeto devuelto es susceptible de ser manipulado por los métodos de la
-clase <em>Process</em>, una vez que empieza su ejecución. Por ejemplo, puede
+clase <span class=clase>Process</span>, una vez que empieza su ejecución. Por ejemplo, puede
 ser "matado" con
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html#destroy()>destroy</a>()
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html#destroy()>destroy</a>()</span>
 -si la implementación lo soporta- o esperar a que termine con
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html#waitFor()>waitFor</a>(),
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html#waitFor()>waitFor</a>()</span>,
 que, como el método
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html#exitValue()>exitValue</a>(),
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html#exitValue()>exitValue</a>()</span>,
 nos devolverá el valor de salida del proceso cuando haya terminado: por
 convenio, el valor cero si no ha habido problemas.
 <pre class=code>
@@ -129,7 +139,7 @@ por ejemplo, cuando el proceso hijo finalice).
 <p>Para pasar parámetros a un programa puedes hacerlo en la misma línea de
 comandos, como si formaran parte del nombre del programa, o usando como
 parámentro de 
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Runtime.html#exec(java.lang.String%5B%5D)>exec</a>()
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Runtime.html#exec(java.lang.String%5B%5D)>exec</a>()</span>
 un vector de cadenas, de las que la primera será el nombre del programa y
 las siguientes sus parámentros.
 <p>Suponiendo que <i>uno</i> y <i>dos</i> fueran parámentros de
@@ -145,15 +155,18 @@ las siguientes sus parámentros.
 				<header>
 					<h1 id=start>Usando start</h1>
 				</header>
-<p>La forma preferida de crear procesos es utilizando el método <em>start</em>
-de la clase <em>ProcessBuilder</em>. Cada objeto de esta clase gestiona una
+<p>La forma preferida de crear procesos es utilizando el método
+<span class=metodo>start</span>
+de la clase <span class=clase>ProcessBuilder</span>. Cada objeto de esta
+clase gestiona una
 colección de atributos del proceso, de manera que dicho método crea un objeto
 con esos atributos. Se gestionan los siguientes atributos: 
 <dl>
 	<dt>Un comando</dt>
 	<dd>Una lista de cadenas que representan el programa a ejecutar y
 	sus argumentos, si los hay; existen dos constructores: pasando un
-	objeto de la clase <em>List</em> y mediante un <em>vararg</em>.</dd>
+	objeto de la clase <span class=clase>List</span> y mediante un
+	<em>vararg</em> (lista de longitud variable de argumentos).</dd>
 	<dt>Un entorno</dt>
 	<dd>El entorno de trabajo de un programa es un conjunto de valores
 	asociados a variables, dependiente del S.O.; el inicial es una copia
@@ -162,21 +175,26 @@ con esos atributos. Se gestionan los siguientes atributos:
 	<dd>Como antes, por defecto, el del proceso padre.</dd>
 	<dt>Una entrada estándar</dt>
 	<dd>Por defecto, la entrada estándar del proceso creado está asignada
-	a una constante propia de <em>ProcessBuilder</em> denominada
+	a una constante propia de <span class=clase>ProcessBuilder</span>
+	denominada
 	<em>Redirect.PIPE</em>, que puede ser modificada con el método
-	<em>redirectInput</em>; de este modo, resulta posible escribir en un
-	flujo que obtendremos con el método <em>getOutputStream</em>.</dd>
+	<span class=metodo>redirectInput()</span>; de este modo, resulta
+	posible escribir en un
+	flujo que obtendremos con el método
+	<span class=metodo>getOutputStream()</span>.</dd>
 	<dt>Una salida estándar</dt>
 	<dd>Similar a la entrada estándar, obtendremos el flujo para leer la
-	salida del proceso con el método <em>getInputStream</em>.</dd>
+	salida del proceso con el método
+	<span class=metodo>getInputStream()</span>.</dd>
 	<dt>Una propiedad (booleana) de redirección del error estándar</dt>
 	<dd>Inicialmente es falsa, indicando que la salida de error está
 	separa de la salida estándar.</dd>
 </dl>
 <p>Para más información, consultar la documentación de Java para la clase
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html>ProcessBuilder</a>.
+<span class=clase><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html>ProcessBuilder</a></span>.
 <p>Reescribimos el ejemplo de programa sencillo que ejecuta el bloc de
-notas, sustituyendo <em>exec</em> por <em>start</em> (notar que no
+notas, sustituyendo <span class=metodo>exec()</span> por
+<span class=metodo>start()</span> (notar que no
 necesitamos acceder al entorno de ejecución):
 <p class=code>Process p = new ProcessBuilder("notepad").<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#start()>start</a>();
 <pre class=code>
@@ -191,24 +209,25 @@ public class Ejemplo {
 	}
 }
 </pre>
-<p>La clase <em>ProcessBuilder.Redirect</em> encapsula una fuente o destino
+<p>La clase <span class=clase>ProcessBuilder.Redirect</span> encapsula una
+fuente o destino
 de entrada/salida cuyos métodos, entre otras cosas, permiten redireccionar
 la entrada y la salida. Por ejemplo, puedes enviar la salida a un fichero
 utilizando el método
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.Redirect.html#to(java.io.File)>to</a>(),
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.Redirect.html#to(java.io.File)>to</a>()</span>,
 leer de un fichero usando
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.Redirect.html#from(java.io.File)>from</a>()
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.Redirect.html#from(java.io.File)>from</a>()</span>
 o añadir a otro fichero con
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.Redirect.html#appendTo(java.io.File)>appendTo</a>().
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.Redirect.html#appendTo(java.io.File)>appendTo</a>()</span>.
 El objeto
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/io/File.html>File</a>
+<span class=clase><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/io/File.html>File</a></span>
 del fichero se puede obtener invocando el método
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.Redirect.html#file()>file</a>().
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.Redirect.html#file()>file</a>()</span>.
 	<h2>Ejercicios</h2>
 	<ol>
 <li>Repite el ejercicio anterior pero, en esta ocasión, utiliza
-<em>ProcessBuilder</em>. Usa el método
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#command(java.lang.String...)>command</a>()
+<span class=clase>ProcessBuilder</span>. Usa el método
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#command(java.lang.String...)>command</a>()</span>
 en el formato del enlace y en el que utliza una lista de cadenas.
 <li>Escribe un programa <b>calcular</b> que reciba, como parámetros,
 	dos operandos y un operador; el valor de salida del programa
@@ -216,7 +235,7 @@ en el formato del enlace y en el que utliza una lista de cadenas.
 	la escritura, los valores deben ser enteros. Si se hace en el
 	<i><b>main</b></i>, el valor de salida se puede devolver con
 	<i><b>return</b></i>; en otro caso, utiliza el método
-	<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/System.html#exit(int)>exit</a>().
+	<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/System.html#exit(int)>exit</a>()</span>.
 	No es necesario (ni deseable) que el programa sea interactivo.
 <li>Escribe un programa interactivo <b>calculadora</b>
 	que solicite operaciones (los operandos y el operador), ejecute
@@ -224,7 +243,7 @@ en el formato del enlace y en el que utliza una lista de cadenas.
 	de la operación, obtenido de la salida de <b>calcular</b>. Debes
 	ejecutar el programa <b>calcular</b> y esperar su terminación.
 	Éste puede ejecutarse solo una vez o solicitar varias veces la
-	operación, en un bucle.
+	operación en un bucle.
 	</ol>
 	Consulta el <a href=/anexos/01_anexo>Anexo I</a> si no sabes cómo
 	crear un programa en Java.
@@ -238,9 +257,9 @@ en el formato del enlace y en el que utliza una lista de cadenas.
 es decir, ni recibe lo que se escribe en el teclado ni su salida se muestra
 por pantalla. La E/S debe ser redireccionada al proceso padre usando los
 métodos:
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html#getOutputStream()>getOutputStream</a>(),
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html#getInputStream()>getInputStream</a>() y
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html#getErrorStream()>getErrorStream</a>() de <em>Process</em>.
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html#getOutputStream()>getOutputStream</a>()</span>,
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html#getInputStream()>getInputStream</a></span>() y
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html#getErrorStream()>getErrorStream</a>()</span> de <span class=clase>Process</span>.
 
 <aside>
 Es una técnica común que la entrada de un programa sea la salida de otro.
@@ -259,7 +278,7 @@ De entre los múltiples métodos existentes para gestionar un IO Stream de Java,
 es muy común utilizar alguno que use un búfer (de datos). En estos casos,
 puede suceder que, al querer leer del flujo de datos, el programa no reciba
 nada, aunque en el otro se haya realizado la escritura. Para solucionar este problema, existe un método
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/io/OutputStream.html#flush()>flush</a>()
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/io/OutputStream.html#flush()>flush</a>()</span>
 que fuerza la escritura de los datos pendientes en el búfer.
 Otro problema que puede, a veces, confundirnos, es el tratamiento del caracter
 de salto de línea: '\n'. Éste, en algunos casos, provoca el <em>flush</em>
@@ -269,20 +288,23 @@ programa que lo espera no lo reciba y, en consecuencia, no continúe con el
 procesamiento normal.
 </aside>
 
-<p>También <em>ProcessBuilder</em> nos permite redireccionar la E/S del
-programa con los métodos
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#redirectInput(java.io.File)>redirectInput</a>(),
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#redirectOutput(java.io.File)>redirectOutput</a>() y
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#redirectError(java.io.File)>redirectError(</a>),
-antes de invocar <em>start()</em>. Los indicados en los enlaces son los
-métodos que redirección a un fichero pero también podemos modificar la E/S
-por defecto utilizando <em>ProcessBuilder.Redirect</em>; o permitir que el
-programa hijo utilice al E/S del padre, sin intermediación, con
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#inheritIO()>inheritIO</a>().
-Podemos, además hacer cosas como conocer o cambiar el directorio de trabajo,
+<p>También <span class=clase>>ProcessBuilder</span> nos permite redireccionar
+la E/S del programa con los métodos
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#redirectInput(java.io.File)>redirectInput</a>()</span>,
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#redirectOutput(java.io.File)>redirectOutput</a>()</span> y
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#redirectError(java.io.File)>redirectError</a>()</span>,
+antes de invocar <span class=metodo>start()</span>. Los indicados en los
+enlaces son los
+métodos de redirección a un fichero pero también podemos modificar la E/S
+por defecto utilizando <span class=clase>>ProcessBuilder.Redirect</span>;
+o permitir que el programa hijo utilice al E/S del padre, sin
+intermediación, con
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#inheritIO()>inheritIO</a>()</span>.
+Podemos, además, hacer cosas como conocer o cambiar el directorio de trabajo
 con el método
-<a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#directory(java.io.File)>directory</a>(),
-según indiquemos un parámentro o no. El directorio es un <em>File</em>; para
+<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#directory(java.io.File)>directory</a>()</span>,
+según indiquemos un parámentro o no. El directorio es un
+<span class=clase>File</span>; para
 generarlo, podemos crearlo con el constructor al que le pasamos la ruta al
 directorio.
 

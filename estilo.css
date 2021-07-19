@@ -1,30 +1,39 @@
-# Programación de servicios y procesos
+/* Programación de servicios y procesos */
 
-# Entorno de imágenes
+/* Entorno de imágenes */
 .image {}
 
-# Leyenda de las imágenes
+/* Leyenda de las imágenes */
 .image .caption {}
 
-# Referencia textual
+/* Referencia textual */
 .cita {}
 
-# Autor de la referencia textual
+/* Autor de la referencia textual */
 .cita .autor {}
 
-# Llamada al sistema operativo
-.llamadaSO {}
+/* Llamada al sistema operativo */
+.llamadaSO {
+	font-style: oblique;
+}
 
-# Clase de Java
+/* Clase de Java */
 .clase {}
 
-# Método de Java
+/* Método de Java */
 .metodo {}
 
-# Código de ejemplo
+/* Código de ejemplo */
 .code {
 	margin-left: 2em;
 	font-family: Courier, 'Courier New', 'Lucida Console', monospace;
 }
 
+
+/**/
+
+aside {
+	border: solid;
+	margin-bottom: 1em;
+}
 
