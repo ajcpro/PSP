@@ -1,0 +1,30 @@
+# Programación de servicios y procesos
+
+# Entorno de imágenes
+.image {}
+
+# Leyenda de las imágenes
+.image .caption {}
+
+# Referencia textual
+.cita {}
+
+# Autor de la referencia textual
+.cita .autor {}
+
+# Llamada al sistema operativo
+.llamadaSO {}
+
+# Clase de Java
+.clase {}
+
+# Método de Java
+.metodo {}
+
+# Código de ejemplo
+.code {
+	margin-left: 2em;
+	font-family: Courier, 'Courier New', 'Lucida Console', monospace;
+}
+
+
