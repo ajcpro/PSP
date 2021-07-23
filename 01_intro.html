@@ -6,14 +6,15 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-03-19">
-		<meta name=modified content="2021-07-19">
+		<meta name=modified content="2021-07-23">
+		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
 		<article>
 			<header>
 				<h1>Introducción</h1>
 			</header>
-			<nav>
+			<nav class=toc>
 				<ol>
 					<li><a href=#ejecutable>Qué es un ejecutable</a></li>
 					<li><a href=#proceso>Qué es un proceso</a></li>
@@ -32,19 +33,22 @@
 programa. El fichero binario podría ser una secuencia de las instrucciones
 a ejecutar, escritas directamente o traducidas desde un código fuente en
 un lenguaje de programación. No	obstante, para mejorar su eficiencia, el
-ejecutable se divide en varias secciones o segmentos: texto, datos, montón
+ejecutable -una vez en la memoria de la computadora- se divide en varias secciones o segmentos: texto, datos, montón
 (o montículo) y pila.
 <div class=image id=img_01_01>
 	<img src=imagenes/01_01_ejecutable.png
-	     alt="Secciones de un ejecutable">
+	     alt="Secciones de un ejecutable: pila,
+	     zona libre de memoria, montón, datos y código">
 	<p class=caption>Formato de un ejecutable en memoria
 </div>
 <p>La sección de texto contiene el código binario propio del programa,
 empezando, normalmente, en la dirección de menor valor (que podemos
 considerar que fuera la dirección cero) y creciendo hasta que finaliza el
 código.
-<p>A continuación, la sección de datos almacena	los valores globales:
-constantes y variables, inicializadas o no. La sección de montón se utiliza
+A continuación, la sección de datos almacena los valores globales:
+constantes y variables, inicializadas o no; en la literatura, este segmento,
+podéis encontrarlo dividido en DATA (o CONST) y BSS -Block Starting Symbol-,
+según estén inicializadas o no. La sección de montón se utiliza
 para asignar memoria dinámicamente, conforme la necesita el programa: cuando
 se solicita memoria al sistema para una estructura de datos o se crea un
 objeto. El espacio libre permite, como acabamos de indicar, que el montón
@@ -60,10 +64,13 @@ disponible) y el crecimiento será "hacia abajo": se hará restando. Según la
 implementación puede haber otras secciones, que el montón crezca hacia abajo
 (y la pila hacia arriba), enlaces a las bibliotecas de carga dinámica... pero
 éste es el esquema básico.
-<p>Dentro de la memoria principal, el S.O. se encarga de hacer creer a cada
-programa que es el único que se está ejecutando. Esto lo realiza mediante la
-denominada segmentación de memoria: asignar a cada programa un espacio de
-memoria propio. La segmentación permite que varios programas compartan la
+<p>Dentro de la memoria principal, el S.O. se encarga de hacer
+creer a cada programa que es el único que se está ejecutando.
+Esto lo realiza mediante la denominada
+<a href=https://es.wikipedia.org/wiki/Segmentaci%C3%B3n_de_memoria>segmentación de memoria</a>:
+asignar a cada programa un espacio de memoria propio. La segmentación se
+inventó, originalmente, para aislar diferentes programas y los datos que
+estaban usando. La segmentación permite que varios programas compartan la
 memoria sin que cualquiera de ellos pueda utilizar la memoria reservada a
 otro. El direccionamiento se realiza mediante una técnica denominada
 "desplazamiento". Cada dirección se representa mediante dos valores:
@@ -76,7 +83,18 @@ segmento, con lo que el programa solo tiene que trabajar con "d".
 	<p class=caption>División de la memoria en segmentos para ejecutar
 	varios programas simultáneamente
 </div>
-
+<aside>
+Aunque pueda parecer confuso porque hemos utilizado los
+términos <em>segmento</em> y <em>segmentación</em> con
+significados diferentes, en realidad, es el mismo principio.
+Pero tal y como lo hemos explicado, en el primer caso hace referencia a
+una organización lógica, de un programa, mientras que en el segundo lo hace
+a una distribución física, de la memoria del ordenador.
+<br>
+En la actualidad, no obstante, para la división de la memoria
+se utiliza preferentemente una técnica diferente denominada
+<a href=https://es.wikipedia.org/wiki/Paginaci%C3%B3n_de_memoria>paginación de memoria</a>.
+</aside>
 
 			</section>
 			<section id=Proceso>
@@ -86,16 +104,16 @@ segmento, con lo que el programa solo tiene que trabajar con "d".
 				<p>
 Un proceso es en esencia un programa en ejecución. Cada proceso tiene
 asociado un espacio de direcciones, una lista de ubicaciones de memoria
-que va desde algún mínimo (generalmente 0) hasta cierto valor máximo, donde
-el proceso puede leer y escribir información. <span class=cita>[…] Un
+que va desde algún mínimo -generalmente cero- hasta cierto valor máximo, donde
+el proceso puede leer y escribir información. <span class=cita>[...] Un
 proceso es un recipiente que guarda toda la información necesaria para
-ejecutar un programa. <span class=autor>Tanenbaum</span></span>
+ejecutar un programa. [...] <span class=autor>Tanenbaum</span></span>.
 Para mantener los distintos programas que se ejecutan en el sistema, el S.O.
 mantiene una tabla de procesos, un vector con una entrada por proceso
 denominada PCB (Process Control Block – bloque de control del proceso),
 que contiene la información relevante acerca del proceso: contador de
 programa, apuntador de pila… y datos propios de identificación para el S.O.
-como un identificador, el identificador del proceso padre, ficheros abiertos,
+como un identificador numérico, el identificador del proceso padre, ficheros abiertos,
 datos estadísticos, etc.
 <p>Un proceso puede crearse en el arranque del sistema o, porque desde otro
 proceso, se solicita al S.O. que lo cree. Vamos a considerar solo la segunda
@@ -103,16 +121,17 @@ opción. Para crear el proceso (hijo), el que ya está en ejecución (proceso
 padre) realiza una llamada al sistema (invoca una función del S.O.) para
 crearlo: <span class=llamadaSO>fork</span>. Dicha llamada crea un clon exacto
 del proceso que la realiza: crea un copia de su PCB, modificando los datos
-pertinentes. Ahora, los dos procesos, padre e hijo, tienen los mismos datos
-de memoria, ficheros, etc. Normalmente, la creación de un proceso hijo se
-realiza para ejecutar un programa diferente (ejecutando una llamada a
+pertinentes. Ahora los dos procesos, padre e hijo, tienen los mismos datos:
+ memoria, ficheros, etc. Normalmente, la creación de un proceso hijo se
+realiza para ejecutar un programa diferente (ejecutando a continuación una
+llamada a
 <span class=llamadaSO>execve</span>) y que éste modifique esos datos, aunque
 puede redireccionar la entrada y la salida. En <i>Windows</i>, se utiliza
 una llamada a la función <span class=llamadaSO>CreateProcess</span></b>.
 <p>Una vez que el proceso es creado, padre e hijo tienen espacios de memoria
 (segmentos) diferentes de manera que, si alguno modifica algo, dicha
 modificación no es visible para el otro. En algunas implementaciones pueden
-compartir la sección de texto, dado que no debe modificarse.
+compartir, por ejemplo, la sección de texto, dado que no debe modificarse.
 			</section>
 
 			<section id=Servicio>
@@ -213,7 +232,8 @@ trabajo a realizar. En los sistemas multiprogramados, sin embargo, esto
 se vuelve más complejo por la cantidad de programas y/o usuarios que pueden
 estar haciendo (o esperando hacer) uso de la CPU.
 <p>Además, la conmutación es una tarea con un coste elevado. Primero, debe
-haber un cambio de contexto del modo del usuario al modo núcleo. El núcleo
+haber un cambio de contexto del modo del usuario al
+<a target=_blank href=https://es.wikipedia.org/wiki/N%C3%BAcleo_(inform%C3%A1tica)>modo núcleo</a>. El núcleo
 debe ahora guardar el estado (PCB) del proceso actual en la tabla de procesos:
 esto incluye el contador de programa, otros registros de la CPU y, en la
 mayoría de sistemas, el mapa de memoria del proceso (las direcciones de
@@ -257,7 +277,12 @@ todos los datos que contengan. Otra característica interesante es que el
 coste de crearlos (y destruirlos) es muy inferior al de crear (y destruir)
 procesos: entre 10 y 100 veces. En tercer lugar, un bloqueo en E/S no afecta
 a todo el proceso ya que otro hilo puede seguir ejecutándose. Y por último,
-en máquinas con múltiples CPU, se puede lograr un paralelismo real.
+en máquinas con múltiples CPU, se puede llegar a lograr un paralelismo real.
+<aside>
+Los hilos comparten todo el espacio de direcciones del proceso al que
+pertenecen a excepción de la pila: cada hilo tiene su propia pila. Esto
+permite que cada uno tenga su propio flujo de control del programa.
+</aside>
 <p>Dado que todos los hilos de un proceso comparten su mismo espacio de
 direcciones, cualquiera de ellos puede acceder a los datos o incluso la pila
 de otro hilo. No existe protección entre hilos porque no es posible, pero
@@ -267,7 +292,7 @@ uno de ellos debe tener su propio registro de datos, denominado <b>TCB</b>
 (<b><i>Thread Control Block</i></b> – bloque de control del hilo) que
 contendrá su propio contador de programa, registros del procesador, pila
 y estado (de ejecución).
-<p>Al hablar sobre los procesadores actuales, se escuchan mucho los términos
+<aside>Al hablar sobre los procesadores actuales, se escuchan mucho los términos
 <em>cores</em> y <em>threads</em> debido a una tecnología denominada
 <b><i>hyper-threading</i></b>. No deben confundirse los conceptos que
 estamos estudiando con esta tecnología. HT se basa en la duplicación de
@@ -277,6 +302,7 @@ pueda utilizar unidades que están desocupadas. Esto proporciona, de cara al
 sistema operativo, la perspectiva de que tiene dos procesadores lógicos.
 Por ello, para nosotros, es como si el sistema tuviera dos procesadores,
 al margen de que sean reales (<i>cores</i>) o lógicos (<i>threads</i>).
+</aside>
 
 			</section>
 
@@ -303,7 +329,7 @@ que existe alguna dependencia entre las mismas, que las tareas deben acceder
 a recursos que comparten, haciéndolo de forma ordenada. Los sistemas actuales,
 en la mayoría de los casos, disponen de varios procesadores, por lo que ha
 aumentado el interés en la programación paralela.
-La programación distribuida es una forma de programación paralela (y/o
+<p>La programación distribuida es una forma de programación paralela (y/o
 concurrente) en la que se utilizan diferentes máquinas, conectadas por
 algún tipo de red de comunicaciones. Es decir, esas partes más pequeñas que
 pueden ejecutarse simultáneamente se reparten entre máquinas independientes,
@@ -315,6 +341,11 @@ pero comunicadas.
 				</header>
 			</section>
 			<footer>
+<nav class=pie>
+	<a class=previo></a>
+	<a class=inicio></a>
+	<a class=siguiente></a>
+</nav>
 		<p>Programación de servicios y procesos</p>
 			</footer>
 		</article>

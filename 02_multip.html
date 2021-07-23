@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-03-21">
-		<meta name=modified content="2021-07-19">
+		<meta name=modified content="2021-07-23">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -14,7 +14,7 @@
 			<header>
 				<h1>Programación multiproceso</h1>
 			</header>
-			<nav>
+			<nav class=toc>
 				<ol>
 					<li><a href=#proceso>Procesos con Java</a></li>
 					<li><a href=#creacion>Creando un proceso</li>
@@ -237,6 +237,11 @@ en el formato del enlace y en el que utliza una lista de cadenas.
 	<i><b>return</b></i>; en otro caso, utiliza el método
 	<span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/System.html#exit(int)>exit</a>()</span>.
 	No es necesario (ni deseable) que el programa sea interactivo.
+	<br>
+	<b>NOTA</b>: Puedes comprobar que la salida sea
+	correcta, por ejemplo, imprimiendo el resultado de la
+	operación; pero el programa final no debería mostrar
+	nada en pantalla.
 <li>Escribe un programa interactivo <b>calculadora</b>
 	que solicite operaciones (los operandos y el operador), ejecute
 	el programa <b>calcular</b> con esos valores y muestre el resultado
@@ -253,10 +258,10 @@ en el formato del enlace y en el que utliza una lista de cadenas.
 				<header>
 					<h1 id=es>Entrada/Salida</h1>
 				</header>
-<p>Por defecto, los procesos creados no tienen su E/S conectada a la consola;
-es decir, ni recibe lo que se escribe en el teclado ni su salida se muestra
-por pantalla. La E/S debe ser redireccionada al proceso padre usando los
-métodos:
+<p>Por defecto, los procesos creados no tienen su E/S conectada
+a la consola; es decir, ni recibe lo que se escribe en el
+teclado ni su salida se muestra por pantalla. La E/S debe ser
+redireccionada al proceso padre usando los métodos:
 <span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html#getOutputStream()>getOutputStream</a>()</span>,
 <span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html#getInputStream()>getInputStream</a></span>() y
 <span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Process.html#getErrorStream()>getErrorStream</a>()</span> de <span class=clase>Process</span>.
@@ -267,8 +272,8 @@ Esta forma de trabajo, en informática, se denomina
 <a target=_blank href=https://es.wikipedia.org/wiki/Tuber%C3%ADa_(inform%C3%A1tica)>tubería</a>.
 En el caso que nos ocupa, además de con ficheros, el programa padre puede
 comunicarse con su/s programa/s hijo/s, simplemente, capturando la E/S; o
-hacer que varios de sus procesos hijos se comuniquen entre ellos conectando
-sus correspondeintes entradas y salidas o a través suyo.
+hacer que varios de sus procesos hijos se comuniquen entre ellos, bien
+conectando sus correspondeintes entradas y salidas bien a través suyo.
 Lo comentado constituye también una técnica de sincronización y comunicación
 entre procesos denominada
 <a target=_blank href=https://es.wikipedia.org/wiki/Paso_de_mensajes>paso de mensajes</a>.
@@ -279,17 +284,17 @@ es muy común utilizar alguno que use un búfer (de datos). En estos casos,
 puede suceder que, al querer leer del flujo de datos, el programa no reciba
 nada, aunque en el otro se haya realizado la escritura. Para solucionar este problema, existe un método
 <span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/io/OutputStream.html#flush()>flush</a>()</span>
-que fuerza la escritura de los datos pendientes en el búfer.
+que fuerza la escritura de los datos pendientes en el búfer, su vaciado.
 Otro problema que puede, a veces, confundirnos, es el tratamiento del caracter
-de salto de línea: '\n'. Éste, en algunos casos, provoca el <em>flush</em>
-pero en otros no. El principal problema, sin embargo, proviene de que lo
-leamos en la entrada y no lo escribamos en la salida: ello provoca que el
-programa que lo espera no lo reciba y, en consecuencia, no continúe con el
-procesamiento normal.
+de salto de línea: <b>'\n'</b>. Éste, en algunas clases, provoca el
+<em>vaciado</em> pero en otras no. El principal problema, sin embargo,
+proviene de que lo leamos en la entrada y no lo escribamos en la salida:
+ello provoca que el programa que lo espera no lo reciba y, en consecuencia,
+no continúe con el procesamiento normal.
 </aside>
 
-<p>También <span class=clase>>ProcessBuilder</span> nos permite redireccionar
-la E/S del programa con los métodos
+<p>También <span class=clase>ProcessBuilder</span> nos permite
+redireccionar la E/S del programa con los métodos
 <span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#redirectInput(java.io.File)>redirectInput</a>()</span>,
 <span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#redirectOutput(java.io.File)>redirectOutput</a>()</span> y
 <span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#redirectError(java.io.File)>redirectError</a>()</span>,
@@ -300,25 +305,35 @@ por defecto utilizando <span class=clase>>ProcessBuilder.Redirect</span>;
 o permitir que el programa hijo utilice al E/S del padre, sin
 intermediación, con
 <span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#inheritIO()>inheritIO</a>()</span>.
-Podemos, además, hacer cosas como conocer o cambiar el directorio de trabajo
-con el método
+Podemos, además, hacer cosas como conocer o cambiar el directorio de trabajo con el método
 <span class=metodo><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ProcessBuilder.html#directory(java.io.File)>directory</a>()</span>,
 según indiquemos un parámentro o no. El directorio es un
 <span class=clase>File</span>; para
-generarlo, podemos crearlo con el constructor al que le pasamos la ruta al
-directorio.
+generarlo, podemos crearlo con el constructor al que le pasamos la ruta al directorio.
 
 	<h2>Ejercicios</h2>
 	<ol>
 <li>Crea un progama que ejecute el comando DIR (de DOS; si usas Linux hazlo
 	con `ls -l`) redireccionando su salida para que tu programa la
 	imprima. Nota: DIR es un parámetro del comando CMD.EXE
+	<br>
+<b>NOTA</b>:Como se ha comentado anteriormente, el proceso que
+crees para la ejecución de DIR no va a tener su E/S conectada
+a la consola: lo que escribas no se verá en pantalla.
+Debes obtener el <i>stream</i> de salida (del programa hijo)
+para leer lo que aparecería en pantalla y poder así
+escribirlo (desde el programa padre).
 <li>Crea un programa que muestre los errores que se producen al ejecutar un
 	programa que no existe.
 	</ol>
 			</section>
 
 			<footer>
+<nav class=pie>
+        <a class=previo></a>
+        <a class=inicio></a>
+        <a class=siguiente></a>
+</nav>
 		<p>Programación de servicios y procesos</p>
 			</footer>
 		</article>
