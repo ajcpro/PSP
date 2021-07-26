@@ -6,7 +6,8 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-06-11">
-		<meta name=modified content="2021-07-21">
+		<meta name=modified content="2021-07-26">
+		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
 		<article>
@@ -48,16 +49,17 @@ características:
 	<dd>Requiere que la información sólo pueda ser modificada por las
 	entidades autorizadas. La modificación incluye escritura, cambio,
 	borrado, creación y reenvío de los mensajes transmitidos.</dd>
+	<dt>Disponibilidad.</dt>
+	<dd>Requiere que los recursos del sistema informático estén
+	disponibles para las entidades autorizadas cuando los necesiten.</dd>
 	<dt>No repudio.</dt>
 	<dd>Ofrece protección a un usuario frente a otro que niegue
-	posteriormente que se realizó cierta comunicación. El no repudio
+	posteriormente su autoría o que se realizó cierta comunicación.
+	El no repudio
 	de origen protege al receptor de que el emisor niegue haber enviado
 	el mensaje, mientras que el no repudio de recepción protege al emisor
 	de que el receptor niegue haber recibido el mensaje. Las firmas
 	digitales constituyen el mecanismo más empleado para este fin.</dd> 
-	<dt>Disponibilidad.</dt>
-	<dd>Requiere que los recursos del sistema informático estén
-	disponibles para las entidades autorizadas cuando los necesiten.</dd>
 </dl>
 
 			</section>
@@ -102,14 +104,15 @@ producir sobre la información, las amenazas se clasifican en cuatro grupos:
 <p>Según su origen las amenazas se clasifican en:
 <dl>
 	<dt>Accidentales.</dt>
-	<dd>Accidentes meteorológicos, incendios, inundaciones, fallos en
+	<dd>Accidentes meteorológicos, como incendios o inundaciones,
+	fallos en
 	los equipos, en las redes, en los sistemas operativos o en el
-	software, errores humanos.</dd>
+	software y errores humanos.</dd>
 	<dt>Intencionadas.</dt>
 	<dd>Son debidas siempre a la acción humana, como la introducción de
-	software malicioso - malware - (aunque este penetre en el sistema
+	software malicioso -malwar - (aunque este penetre en el sistema
 	por algún procedimiento automático, su origen es siempre humano),
-	intrusión informática (con frecuencia se produce previa la
+	intrusión informática (con frecuencia se produce previanebte a la
 	introducción de malware en los equipos), robos o hurtos. Las
 	amenazas intencionadas pueden tener su origen en el exterior de la
 	organización o incluso en el personal de la misma.</dd>
@@ -124,12 +127,12 @@ producir sobre la información, las amenazas se clasifican en cuatro grupos:
 especificaciones, una <em>petición de objeto inapropiada</em>, como un
 índice no válido (en un vector) o una referencia nula, o que el estado
 de un objeto sea inapropiado o inexistente.
-<p>Pero no siempre es devido a un error de programación. Pueden producirse
+<p>Pero no siempre es debido a un error de programación. Pueden producirse
 errores en el entorno, como la introduccion errónea de los datos o que se
 produzca una interrupción en las comunicaciones; también, durante el
-procesamiento de ficheros como que no exista el archiuvo al que desamos
+procesamiento de ficheros, como que no exista el archivo al que deseamos
 acceder o que los permisos de acceso sean inadecuados.
-<h2>Programción defensiva</h2>
+<h2>Programación defensiva</h2>
 Estos acontecimientos provocan que, para garantizar el correcto funcionamiento
 de las aplicaciones, deba utilizarse la técnica de la
 <a target=_blank href=https://es.wikipedia.org/wiki/Programaci%C3%B3n_defensiva>programación defensiva</a>,
@@ -237,9 +240,9 @@ conocidas como <em>checked exceptions</em>
 			</section>
 			<footer>
 <nav class=pie>
-        <a class=previo></a>
-        <a class=inicio></a>
-        <a class=siguiente></a>
+        <a class=previo href=02_multip.html>Programación multiproceso</a>
+        <a class=inicio href=index.html>Índice</a>
+        <a class=siguiente href=04_progpar.html>Programación paralela</a>
 </nav>
 		<p>Programación de servicios y procesos</p>
 			</footer>
