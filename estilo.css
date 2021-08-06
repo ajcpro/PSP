@@ -38,8 +38,14 @@
 .code {
 	margin-left: 2em;
 	font-family: Courier, 'Courier New', 'Lucida Console', monospace;
+	white-space: pre;
 }
 
+/* Palabra especial o reservada */
+.palabra {
+	color: red;
+	font-weight: bold; 
+}
 
 /**/
 

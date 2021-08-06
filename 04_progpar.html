@@ -1,0 +1,270 @@
+<!doctype html>
+
+<html lang=es>
+	<head>
+		<title>Programción paralela</title>
+		<meta charset=utf-8>
+		<meta name=author content="Antonio Cepero">
+		<meta name=created content="2021-06-14">
+		<meta name=modified content="2021-08-06">
+		<link rel=stylesheet href="estilo.css">
+	</head>
+	<body>
+		<article>
+			<header>
+				<h1>Programación paralela</h1>
+			</header>
+			<nav class=toc>
+				<ol>
+					<li><a href=#recursividad>Recursividad</a></li>
+					<li><a href=#creatarea>Creación de tareas</a></li>
+					<li><a href=#fjframework><em>Fork-Join Framework</em></a></li>
+				</ol> 
+			</nav>
+			<section id=Recursividad>
+				<header>
+					<h1 id=recursividad>Recursividad</h1>
+				</header>
+<p>Vamos a comenzar hablando de lo que es la recursividad. La recursividad,
+que merecería un tema dedicado a la misma por sí sola, es una técnica muy
+poderosa que podemos utilizar en lugar de la iteración -y Java nos
+proporciona un framework que nos permite resolver problemas recursivos de
+forma paralela eficientemente-.
+<p>En general, la recursividad nos proporciona un modo distinto de ver las
+repeticiones y, aunque las soluciones recursivas suelen ser menos eficientes
+que las iterativas, para el mismo problema, en muchos casos la solución
+recursiva es elegante y simple, mientras que resulta muy complejo
+resolverlo iterativamente.
+<p>Pero vamos a ver en qué consiste ¿Recordáis qué es una matrioska? Esas
+muñecas rusas que se guardan unas dentro de otras, de forma que en el
+interior de cada una de ellas hay otra más pequeña. Un algoritmo recursivo
+es como un conjunto de matrioskas: se reproduce a sí mismo con ejemplares
+más y más pequeños hasta que se encuentra la solución (no hay más muñecas).
+<p>Imaginad la exponenciación:
+<p><span class=code>X<sup>n</sup> = X * X * X * ... * X</span>
+<p>que también podemos escribir como:
+<p><span class=code>X<sup>n</sup> = X * X<sup>n-1</sup></span>
+<p>Esto es una definición recursiva: la definición se da en términos de una versión más pequeña de sí misma.
+<p>Veamos algunas definiciones:
+<dl>
+	<dt>Caso base</dt>
+	<dd>Caso para el que la solución puede establecerse en forma no
+	recursiva</dd>
+	<dt>Caso general</dt>
+	<dd>Caso para el que la solución se expresa en términos de una
+	versión más pequeña de sí mismo</dd>
+	<dt>Algoritmo recursivo</dt>
+	<dd>Solución que se expresa en términos de (a) instancias más
+	pequeñas de sí mismo y (b) un caso base</dd>
+</dl>
+<p>¿Cuándo se detiene el proceso? Cuando hemos alcanzado un caso para el
+que conocemos la respuesta sin tener que volver a aplicar la recursividad.
+Como hemos indicado, decimos que el caso para el que la solución se expresa
+en términos de forma no recursiva es el caso base.
+<p>Supongamos el caso de la exponenciación:
+<pre class=code>
+	double exp ( double x, int n ) {
+		return x * exp(x, n-1); //¿Fin?
+	}
+</pre>
+<p>sabemos que, cuando <em>n</em> es uno, X<sup>1</sup> es X. Ese es nuestro
+caso base, aquél del que conocemos la respuesta de forma explícita:
+<pre class=code>
+	double exp ( double x, int n ) {
+		if ( n == 1 )
+			return x; // Fin
+		return x * exp(x, n-1);
+	}	
+</pre>
+<p>También podríamos haber utilizado como caso aquél en que <em>n</em> es
+cero ya que, como sabemos, cualquier número elevado a cero es uno:
+<br><span class=code>X<sup>0</sup> = 1</span>
+<br>todo dependerá del dominio que defináis para <em>n</em>.
+<p><b>Ejercicio: Factorial de un número (N!)</b>
+<br>Resolver el problema del factorial de un número N. El factorial de un
+número es dicho número multiplicado por el número menos uno, por el número
+menos dos, etc. El factorial de cero es uno.
+<br><span class=code>N! = N * N-1 * N-2 * N-3 …</span>
+<br><span class=code>0! = 1</span>
+<p>Los métodos de cálculo de la exponenciación y el factorial son muy
+simples. En realidad, solo son útiles para entender la recursividad y,
+en la práctica, usaríamos una solución iterativa, que es más sencilla
+y más eficiente.
+<p>Os animo a que hagáis la versión iterativa. La diferencia principal
+es que la versión iterativa necesita de un par de variables (para el
+acumulador y el contador), que la versión recursiva no. El bucle tampoco
+es necesario en la versión recursiva, aunque requiere una condición
+(o bifurcación).
+<p>
+<b>Ejercicio: Convertir un número decimal (base 10) a binario (base 2)</b>
+<ol>
+	<li>Dividir el decimal por 2
+	<li>El resto obtenido será el bit de menos peso (el de más a
+		la derecha)
+	<li>Utilizar ahora el cociente como dividendo
+	<li>Repetir, colocando cada resto a la izquierda del anterior
+	<li>Hasta que el cociente sea cero
+</ol>
+<p>Nota: Podéis intentar hacerlo en secuencial antes de implementar la solución recursiva
+<p>En definitiva, <b>¿cuándo podemos usar la recursividad y cómo debemos
+	hacerlo?</b>
+<ol>
+	<li>Asegurarse de que existe un caso base
+	<li>No utilizar una estructura repetitiva (WHILE). La estructura
+		básica es una selección (IF), debiendo existir, al menos,
+		dos casos: el recursivo	y el base.
+		Puede suceder que el caso base no haga nada,
+		pero debe existir la estructura de selección.
+	<li>Procurar utilizar solo variables locales al método recursivo.
+		Algunos objetos pueden ser globales si se opera sobre datos
+		disjuntos como, por ejemplo, los elementos de un vector.
+	<li>Los parámetros formales (tamaño del problema) deben ser siempre
+		por valor; no modificar objetos pasados como parámetros.
+</ol>
+<h2>Ejercicios</h2>
+<ol>
+	<li>Escribir una función recursiva que calcule el
+<a target=_blank href=https://es.wikipedia.org/wiki/Sucesi%C3%B3n_de_Fibonacci#Definici%C3%B3n_recurrente>número de Fibonacci</a>
+<li>Escribir un comprobador (recursivo) de
+<a target=_blank href=https://dle.rae.es/pal%C3%ADndromo>palíndromo</a>
+<li>Implementad el problema de las
+	<a target=_blank href=https://es.wikipedia.org/wiki/Torres_de_Han%C3%B3i>torres de Hanoi</a>
+(Vídeo de
+	<a target=_blank href=https://www.youtube.com/watch?v=LM68IQvIo_E>Derivando</a>)
+<li>Implementad el algoritmo de ordenación rápida
+(<a target=_blank href=https://es.wikipedia.org/wiki/Quicksort>Quicksort</a>)
+<li>Realizad el
+	<a target=_blank href=https://es.wikipedia.org/wiki/Problema_de_las_ocho_reinas>problema de las ocho reinas</a>: colocad en un tablero de ajedrez 8 reinas sin que se maten entre ellas.
+
+</ol>
+
+			</section>
+			<section id=CreaTarea>
+				<header>
+					<h1 id=creatarea>Creación de tareas</h1>
+				</header>
+<p>Supongamos que tenemos una secuencia de tareas o instrucciones S1, S2, S3…
+Nuestro objetivo consiste en determinar <em>cuáles de ellas pueden ejecutarse
+en paralelo y cómo podemos coordinar ese paralelismo</em>.
+<p>Vamos a imaginar que tenemos un vector y que queremos sumarlos. El algoritmo
+es simple: utilizamos un acumulador -<em>suma</em>, inicializado a cero- al
+que vamos sumando cada uno de los elementos del vector, por ejemplo, con un
+bucle. El acumulador contendrá la suma de los elementos del vector.
+¿Qué sucedería si dividimos el vector en dos partes, izquierda y derecha?
+Podríamos obtener la suma de los elementos de la parte izquierda como
+<em>suma_izq</em> y la suma de los elementos de la parte derecha como
+<em>suma_dch</em>.
+La <em>suma</em> de los elementos del vector, ahora, será la misma que si
+sumamos <em>suma_izq</em> y <em>suma_dch</em>.
+<br><span class=code>suma_izq = suma de la parte izquierda</span>
+<br><span class=code>suma_dch = suma de la parte derecha</span>
+<br><span class=code>suma = suma_izq + suma_dch</span>
+<br>Esto se puede hacer secuencialmente pero, ¿cómo podemos hacerlo en paralelo?
+<p>Vamos a usar una notación en la que a una instrucción vamos a precederla
+de la palabra <span class=palabra>ASYNC</span> que, a su vez, será una
+instrucción. Esta instrucción <span class=palabra>ASYNC</span> indica que la
+instrucción que la sigue debe ejecutarse de forma asíncrona. La idea de la
+asincronía hace referencia a que no tiene correspondencia en el tiempo; en
+nuestro concepto de paralelismo, la instrucción
+<span class=palabra>ASYNC</span>
+implica que puede hacerse antes que lo que la sigue, después de la que la
+sigue o, como nos interesa a nosotros, a la vez (en paralelo) que lo que
+viene a continuación.
+<br><span class=code><span class=palabra>ASYNC</span> suma_izq = suma de la parte izquierda</span>
+<br><span class=code>suma_dch = suma de la parte derecha</span>
+<br><span class=code>suma = suma_izq + suma_dch</span>
+<p>Una vez que tenemos la suma de los elementos de la parte derecha, queremos
+obtener la suma total; para ello necesitamos tener también la suma de los
+elementos de la parte izquierda. Debemos fijarnos en que <em>suma_izq</em>,
+al ejecutarse en forma asíncrona con lo que viene a continuación, puede
+finalizar más tarde que <em>suma_dch</em> y el sistema intentaría realizar
+la suma de ambas partes aun cuando la izquierda pudiera no estar
+disponible. Lo que deseamos es que puedan ejecutarse
+de forma asíncrona todas las tareas que no necesitan hacerlo secuencialmente
+y que, de algún modo, cuando tengamos que continuar, esperemos a que todas
+ellas se hayan completado. Vamos a introducir una notación
+<span class=palabra>FINISH</span> que va a hacer exactamente lo que buscamos.
+Si hemos asociado un <span class=palabra>ASYNC</span> a <em>suma_izq</em>
+y encerramos ahora <em>suma_izq</em> y <em>suma_dch</em> entre
+<span class=palabra>FINISH</span>, vamos a estar seguros de que tanto
+<em>suma_izq</em> como <em>suma_dch</em> se habrán completado antes de
+proceder a calcular <em>suma</em>, combinando ambos valores.
+<pre class=code>
+<span class=palabra>FINISH</span> {
+	<span class=palabra>ASYNC</span> {
+		suma_izq = suma de la parte izquierda</span>
+	}
+	suma_dch = suma de la parte derecha</span>
+}
+suma = suma_izq + suma_dch
+</pre>
+<p>De este modo, si tenemos una máquina con, por ejemplo, dos procesadores,
+podemos ejecutar <em>suma_izq</em> en el procesador cero y <em>suma_dch</em>
+en el procesador 1.
+<p>Extendiéndolo a cualquier secuencia de instrucciones, podemos utilizar
+<span class=palabra>ASYNC</span> en cualquier oportunidad que encontremos
+de implementar paralelismo, sincronizando los valores que necesitan estar
+disponibles antes de la ejecución de otra instrucción, con
+<span class=palabra>FINISH</span>.
+
+<p>
+<b>Ejercicio: calcular la suma de los elementos de un vector</b>
+<br>Hacerlo primero con el algoritmo sencillo que se comenta en el texto para,
+a continuación, probar a hacerlo dividendo el vector en dos partes: basta con
+calcular el elemento mitad; la suma de la primera parte será desde el primer
+elemento hasta el mitad y la de la segunda será desde el siguiente al elemento
+mitad hasta el último.
+<p>
+<b>Ejercicio: hacerlo ahora de forma recursiva</b>
+<br>El programa sería equivalente al de la ordenación rápida (éste es más
+sencillo), pero solo interesa determinar el método para realizar la suma.
+Consiste en crear una función que devuelva el valor de la suma de algunos de
+los elementos del vector, desde una posición de inicio a otra final:
+<ul>
+	<li>Si el vector no tiene elementos (la posición final es menor que
+		la inicial), la suma será cero
+	<li>Si solo hay un elemento (las posiciones inicial y final coinciden),
+		la suma será el valor del elemento
+	<li>Si hay más elementos, se calcula el elemento mitad y se determinan
+		las sumas parciales invocando a la función con los nuevos
+		valores
+</ul>
+			</section>
+			<section id=FJFrameWork>
+				<header>
+					<h1 id=fjframework><em>Fork-Join Framework</em></h1>
+				</header>
+<p>Como decíamos, los algoritmos recursivos son más ineficientes que sus
+homólogos iterativos pero, en un ambiente de paralelismo, la recursividad
+puede ser elegante y también eficiente. En un entorno paralelo, la
+recursividad proporciona un estilo natural de describir algoritmos sin las
+desventajas que se producen en la computación secuencial.
+<p>El <i>framework <b>fork-join</b></i> es uno de los modos más populares de
+explotar el paralelismo de Java. Se basa, fundamentalmente, en las clases
+<span class=clase><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/RecursiveAction.html>RecursiveAction</a></span>
+y
+<span class=clase><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/RecursiveTask.html>RecursiveTask</a></span>.
+Ambas son extensiones de una clase
+<span class=clase><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/ForkJoinTask.html>ForkJoinTask</a></span>,
+cuya documentación podéis consultar, que permite resolver problemas mediante
+la técnica de divide y vencerás, de forma eficiente, explotando el paralelismo.
+La forma más simple de utilización es a través de los métodos
+<span class=metodo>compute</span>, en el que construimos el algoritmo
+recursivo, <span class=metodo>fork</span>, con el que crearemos procesos
+asíncronos (equivalente al <span class=palabra>ASYNC</span>), y
+<span class=metodo>join</span>, con el que esperaremos a la finalización
+del proceso asíncrono (equivalente al <span class=palabra>FINISH</span>).
+
+
+			</section>
+			<footer>
+<nav class=pie>
+	<a class=previo href=03_progsec.html>Programación segura</a>
+        <a class=inicio href=index.html>Índice</a>
+        <a class=siguiente></a>
+</nav>
+		<p>Programación de servicios y procesos</p>
+			</footer>
+		</article>
+	</body>
+</html>
