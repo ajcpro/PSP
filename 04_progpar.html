@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-06-14">
-		<meta name=modified content="2021-08-06">
+		<meta name=modified content="2021-08-07">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -76,7 +76,7 @@ caso base, aquél del que conocemos la respuesta de forma explícita:
 		return x * exp(x, n-1);
 	}	
 </pre>
-<p>También podríamos haber utilizado como caso aquél en que <em>n</em> es
+<p>También podríamos haber utilizado como caso base aquél en que <em>n</em> es
 cero ya que, como sabemos, cualquier número elevado a cero es uno:
 <br><span class=code>X<sup>0</sup> = 1</span>
 <br>todo dependerá del dominio que defináis para <em>n</em>.
@@ -84,7 +84,7 @@ cero ya que, como sabemos, cualquier número elevado a cero es uno:
 <br>Resolver el problema del factorial de un número N. El factorial de un
 número es dicho número multiplicado por el número menos uno, por el número
 menos dos, etc. El factorial de cero es uno.
-<br><span class=code>N! = N * N-1 * N-2 * N-3 …</span>
+<br><span class=code>N! = N * (N-1) * (N-2) * (N-3) …</span>
 <br><span class=code>0! = 1</span>
 <p>Los métodos de cálculo de la exponenciación y el factorial son muy
 simples. En realidad, solo son útiles para entender la recursividad y,
@@ -105,7 +105,11 @@ es necesario en la versión recursiva, aunque requiere una condición
 	<li>Repetir, colocando cada resto a la izquierda del anterior
 	<li>Hasta que el cociente sea cero
 </ol>
+<p>Al hacer el algoritmo, podríamos sustituir lo que dice el punto dos por:
+"Si el número es impar, el bit de menos peso será 1; si es par, será 0".
+Además, los puntos 1 y 2 pueden ser intercambiandos.
 <p>Nota: Podéis intentar hacerlo en secuencial antes de implementar la solución recursiva
+<h2>Conclusión</h2>
 <p>En definitiva, <b>¿cuándo podemos usar la recursividad y cómo debemos
 	hacerlo?</b>
 <ol>
@@ -167,14 +171,15 @@ instrucción que la sigue debe ejecutarse de forma asíncrona. La idea de la
 asincronía hace referencia a que no tiene correspondencia en el tiempo; en
 nuestro concepto de paralelismo, la instrucción
 <span class=palabra>ASYNC</span>
-implica que puede hacerse antes que lo que la sigue, después de la que la
+implica que puede hacerse antes que lo que la sigue, después de lo que la
 sigue o, como nos interesa a nosotros, a la vez (en paralelo) que lo que
 viene a continuación.
 <br><span class=code><span class=palabra>ASYNC</span> suma_izq = suma de la parte izquierda</span>
 <br><span class=code>suma_dch = suma de la parte derecha</span>
 <br><span class=code>suma = suma_izq + suma_dch</span>
 <p>Una vez que tenemos la suma de los elementos de la parte derecha, queremos
-obtener la suma total; para ello necesitamos tener también la suma de los
+obtener la suma total (que es la instrucción que debe ejecutarse a
+continuación); para ello necesitamos tener también la suma de los
 elementos de la parte izquierda. Debemos fijarnos en que <em>suma_izq</em>,
 al ejecutarse en forma asíncrona con lo que viene a continuación, puede
 finalizar más tarde que <em>suma_dch</em> y el sistema intentaría realizar
@@ -211,9 +216,10 @@ disponibles antes de la ejecución de otra instrucción, con
 <b>Ejercicio: calcular la suma de los elementos de un vector</b>
 <br>Hacerlo primero con el algoritmo sencillo que se comenta en el texto para,
 a continuación, probar a hacerlo dividendo el vector en dos partes: basta con
-calcular el elemento mitad; la suma de la primera parte será desde el primer
-elemento hasta el mitad y la de la segunda será desde el siguiente al elemento
-mitad hasta el último.
+calcular la posición del elemento mitad (la división entera por dos de la suma
+de la posición del primero y la del último); la suma de la primera parte será
+desde el primer elemento hasta el mitad y la de la segunda será desde el
+siguiente al elemento mitad hasta el último.
 <p>
 <b>Ejercicio: hacerlo ahora de forma recursiva</b>
 <br>El programa sería equivalente al de la ordenación rápida (éste es más
@@ -222,13 +228,16 @@ Consiste en crear una función que devuelva el valor de la suma de algunos de
 los elementos del vector, desde una posición de inicio a otra final:
 <ul>
 	<li>Si el vector no tiene elementos (la posición final es menor que
-		la inicial), la suma será cero
+		la inicial), la suma será cero; este caso no debería darse
+		nunca.
 	<li>Si solo hay un elemento (las posiciones inicial y final coinciden),
-		la suma será el valor del elemento
+		la suma será el valor del elemento.
 	<li>Si hay más elementos, se calcula el elemento mitad y se determinan
 		las sumas parciales invocando a la función con los nuevos
-		valores
+		valores: inicio y mitad, siguiente a mitad y final.
 </ul>
+<p>Nota: El caso en el que el vector solo contiene un elemento es el caso
+base y cuando hay más, el caso general.
 			</section>
 			<section id=FJFrameWork>
 				<header>
@@ -241,20 +250,154 @@ recursividad proporciona un estilo natural de describir algoritmos sin las
 desventajas que se producen en la computación secuencial.
 <p>El <i>framework <b>fork-join</b></i> es uno de los modos más populares de
 explotar el paralelismo de Java. Se basa, fundamentalmente, en las clases
-<span class=clase><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/RecursiveAction.html>RecursiveAction</a></span>
+<a class=clase target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/RecursiveAction.html>RecursiveAction</a>
 y
-<span class=clase><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/RecursiveTask.html>RecursiveTask</a></span>.
+<a class=clase target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/RecursiveTask.html>RecursiveTask</a>.
 Ambas son extensiones de una clase
-<span class=clase><a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/ForkJoinTask.html>ForkJoinTask</a></span>,
+<a class=clase target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/ForkJoinTask.html>ForkJoinTask</a>,
 cuya documentación podéis consultar, que permite resolver problemas mediante
 la técnica de divide y vencerás, de forma eficiente, explotando el paralelismo.
-La forma más simple de utilización es a través de los métodos
-<span class=metodo>compute</span>, en el que construimos el algoritmo
-recursivo, <span class=metodo>fork</span>, con el que crearemos procesos
-asíncronos (equivalente al <span class=palabra>ASYNC</span>), y
-<span class=metodo>join</span>, con el que esperaremos a la finalización
+La forma más simple de utilización es a través de los métodos:
+<ul>
+<li><span class=metodo>compute</span>, en el que construimos el algoritmo
+recursivo,
+<li><span class=metodo>fork</span>, con el que crearemos procesos
+asíncronos (equivalente al <span class=palabra>ASYNC</span>),
+<li>y <span class=metodo>join</span>, con el que esperaremos a la finalización
 del proceso asíncrono (equivalente al <span class=palabra>FINISH</span>).
-
+</ul>
+<p>Siguiendo con nuestro ejemplo para la suma de los elementos de un vector,
+creamos una clase Suma que contiene, como componentes de estado, un vector
+<em>v</em> y unos valores de inicio (<em>izq</em>) y de finalización
+(<em>dch</em>). También, un valor <em>suma</em> que almacenará la suma de
+los elementos del vector desde <em>izq</em> hasta <em>dch</em>. Es decir,
+el vector puede contener muchos elementos pero a nosotros solo nos
+interesará aquí la suma desde un elemento cualquiera (cuya posición en el
+vector denominamos <em>izq</em>) hasta otro (cuya posición denominamos
+<em>dch</em>).
+<pre class=code>
+class Suma {
+	double[] v;
+	int izq, dch;
+	double suma;
+}
+</pre>
+<p>Podemos tener un constructor que almacene los valores del vector, posición
+de inicio y fin. Podríamos hacer que este constructor calculara el valor de
+la suma pero, en su lugar, vamos a crear un método específico.
+<pre class=code>
+Suma ( double[] v, int izq, int dch );
+</pre>
+<p>El método con el que vamos a calcular el valor de la suma (de manera
+recursiva) se va a denominar <span class=metodo>compute</span>. ¿Cuál es
+nuestro caso base? Recordando el ejercicio anterior, si ambos valores (de
+posición) son el mismo, la suma corresponderá al valor del elemento en esa
+posición.
+¿Cuál es el método recursivo? Dividir el vector en dos subvectores
+y calcular la suma para cada uno de ellos.
+Para hacerlo, calculamos el valor de la posición intermedia <em>m</em>: la
+parte izquierda irá desde la posición inicial (<em>izq</em>) hasta esta
+posición intermedia (<em>m</em>); la parte derecha comenzará en la posición
+siguiente a la intermedia (<em>m+1</em>) y terminará en la posición final
+(<em>dch</em>).
+<pre class=code>
+void compute() {
+	if ( izq == dch )
+		suma = vector[izq];
+	else {
+		int m = (izq + dch) / 2;
+	}
+}
+</pre>
+<p>Volvemos a tener el mismo caso que estábamos construyendo pero con dos
+secciones diferentes del vector: creamos dos nuevas instancias (<em>I</em>,
+<em>D</em>) iguales a la que contiene este método, con sus respectivos
+valores de inicio y fin. Ejecutamos a continuación el método compute para
+cada una de esas instancias y la suma de este objeto será igual la suma de
+las correspondientes a cada instancia I y D.
+<pre class=code>
+Suma I = new Suma(v, izq, m);
+Suma D = new Suma(v, m+1, dch);
+I.compute();
+D.compute();
+suma = I.suma + D.suma;
+</pre>
+<p>Como ya quedó claro, el cálculo de la suma de la parte izquierda es
+totalmente independiente de la suma de la parte derecha, por lo que podemos
+calcular ambas de manera asíncrona. Esto nos permite pensar que, por ejemplo,
+podríamos realizar el cálculo de la suma de <em>I</em> de forma asíncrona
+(<span class=palabra>ASYNC</span> I.compute();): se ejecutaría en otro
+procesador si nuestra máquina es multiprocesador. Pero debemos esperar a
+que dicha suma se haya realizado antes de utilizarla, junto con la de
+<em>D</em>, por lo que deberá existir un <span class=palabra>FINISH</span>
+que englobe a ambos compute. Finalmente, como ambas instancias habrán
+calculado su propia suma, podremos obtener la suma de este objeto.
+<pre class=code>
+void compute() {
+	if ( izq == dch )
+		suma = vector[izq];
+	else {
+		int m = (izq + dch) / 2;
+		Suma I = new Suma(v, izq, m);
+		Suma D = new Suma(v, m+1, dch);
+		<span class=palabra>FINISH</span> {
+			<span class=palabra>ASYNC</span> {
+				I.compute();
+			}
+			D.compute();
+		}
+		suma = I.suma + D.suma;
+	}
+}
+</pre>
+<p>Convetirlo en código Java es sencillo haciendo uso del
+<em>FJ Framework</em>. Nuestra clase no cambia, salvo porque debe extender
+a la clase
+<a class=clase target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/RecursiveAction.html>RecursiveAction</a>.
+Como ya se ha comentado, el equivalente al <span class=palabra>ASYNC</span>
+lo encontramos en el método <span class=metodo>fork</span>. La invocación al
+método <span class=metodo>fork</span> de la clase que extiende a
+<span class=clase>RecursiveAction</span> crea una nueva instancia de ejecución
+que invoca la ejecución del método <span class=metodo>compute</span>. Después,
+para esperar a que dicho valor esté disponible, invocamos al método
+<span class=metodo>join</span> de la clase: si la ejecución de
+<span class=metodo>compute</span> ya hubiera terminado, continuará la
+ejecución pero, en caso contrario, bloqueará la ejecución del proceso
+actual hasta que el otro proceso finalice: hasta que termine la ejecución
+de <span class=metodo>compute</span>.
+<pre class=code>
+class Suma extends RecursiveAction {
+	double[] v;
+	int izq, dch;
+	double suma;
+ 	void compute() {
+		if ( izq == dch )
+			suma = vector[izq];
+		else {
+			int m = (izq + dch) / 2;
+			Suma I = new Suma(v, izq, m);
+			Suma D = new Suma(v, m+1, dch);
+			I.fork();
+			D.compute();
+			I.join();
+			suma = I.suma + D.suma;
+		}
+	}
+}
+</pre>
+<p>En lugar de utilizar el par <em>fork-join</em>, resulta posible también
+utilizar el método
+<a class=metodo href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/ForkJoinTask.html#invokeAll(java.util.concurrent.ForkJoinTask,java.util.concurrent.ForkJoinTask)>invokeAll</a>,
+que se encarga por si mismo de lanzar la ejecución de ambas tareas y esperar
+a su finalización, antes de proseguir.
+<pre class=code>
+...
+Suma I = new Suma(v, izq, m);
+Suma D = new Suma(v, m+1, dch);
+invokeAll(I, D);
+suma = I.suma + D.suma;
+...
+</pre>
 
 			</section>
 			<footer>
