@@ -41,9 +41,14 @@
 	white-space: pre;
 }
 
+/* Modificado con respecto a uno anterior */
+.modificado {
+	color: #0264e6;
+}
+
 /* Palabra especial o reservada */
 .palabra {
-	color: red;
+	color: #e61703;
 	font-weight: bold; 
 }
 

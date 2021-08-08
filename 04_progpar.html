@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-06-14">
-		<meta name=modified content="2021-08-07">
+		<meta name=modified content="2021-08-08">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -364,9 +364,9 @@ para esperar a que dicho valor esté disponible, invocamos al método
 <span class=metodo>compute</span> ya hubiera terminado, continuará la
 ejecución pero, en caso contrario, bloqueará la ejecución del proceso
 actual hasta que el otro proceso finalice: hasta que termine la ejecución
-de <span class=metodo>compute</span>.
+del <span class=metodo>compute</span> de <em>I</em>.
 <pre class=code>
-class Suma extends RecursiveAction {
+class Suma <span class=modificado>extends RecursiveAction</span> {
 	double[] v;
 	int izq, dch;
 	double suma;
@@ -376,10 +376,10 @@ class Suma extends RecursiveAction {
 		else {
 			int m = (izq + dch) / 2;
 			Suma I = new Suma(v, izq, m);
-			Suma D = new Suma(v, m+1, dch);
+			Suma D = new Suma(v, m+1, dch);<span class=modificado>
 			I.fork();
 			D.compute();
-			I.join();
+			I.join();</span>
 			suma = I.suma + D.suma;
 		}
 	}
@@ -393,11 +393,42 @@ a su finalización, antes de proseguir.
 <pre class=code>
 ...
 Suma I = new Suma(v, izq, m);
-Suma D = new Suma(v, m+1, dch);
-invokeAll(I, D);
+Suma D = new Suma(v, m+1, dch);<span class=modificado>
+invokeAll(I, D);</span>
 suma = I.suma + D.suma;
 ...
 </pre>
+<p>El <em>framework fork-join</em> se ejecuta en un servicio de ejecución
+denominado
+<a class=clase target=_blank
+	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/ForkJoinPool.html>ForkJoinPool</a>.
+No vamos, de momento, a entrar en cómo funciona. Nos basta con pensar que
+hay un servicio con el que vamos a poder trabajar. Para utilizarlo, en
+algún punto de nuestro código invocaremos una instancia de la clase que
+extiende el <span class=clase>RecursiveAction</span> como muestra el
+código siguiente:
+<pre>
+class Programa {
+    ...
+    class Ejemplo extends RecursiveAction {
+        ...
+    }
+    ...
+        ForkJoinPool
+	    .commonPool()
+            .invoke(ra = new Ejemplo(...));
+        // obtenemos ra.valor
+    ...
+    main( ) {
+        ...
+    }
+}
+</pre>
+<p>Este <span class=clase>ForkJoinPool</span> tiene un método
+<span class=metodo>commonPool</span> que nos devuelve una referencia a
+un grupo de hilos estándar y al que podemos enviar nuestra tarea, con
+el método <span class=metodo>invoke</span> para que la ejecute en paralelo.
+
 
 			</section>
 			<footer>
