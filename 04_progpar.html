@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-06-14">
-		<meta name=modified content="2021-08-08">
+		<meta name=modified content="2021-08-11">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -398,15 +398,59 @@ invokeAll(I, D);</span>
 suma = I.suma + D.suma;
 ...
 </pre>
-<p>El <em>framework fork-join</em> se ejecuta en un servicio de ejecución
-denominado
+<p>Tal cual lo hemos creado hasta este momento, el programa es totalmente
+funcional y, si creamos un objeto de nuestra
+clase <em>Suma</em> e invocamos su método <em>compute</em>, éste se
+ejecutará haciendo uso del paralelismo.
+<pre class=code>
+import java.util.concurrent.RecursiveAction;
+
+public class SumaVector {
+
+	static final int MAX_VECTOR = 1000000;
+
+	static class SumaFJ extends RecursiveAction {
+		double suma;
+		int ini, fin;
+		double[] vector;
+		
+		SumaFJ ( double[] v, int i, int f ) {
+			vector = v;
+			ini = i;
+			fin = f;
+		}
+		
+		 protected void compute ( ) {
+			if ( ini == fin ) suma = vector[ini];
+			else {
+				int mitad = (ini + fin) / 2;
+				SumaFJ izq = new SumaFJ(vector, ini, mitad);
+				SumaFJ dch = new SumaFJ(vector, mitad+1, fin);
+				izq.fork(); dch.compute(); izq.join();
+				suma = dch.suma + izq.suma;
+			}
+		}
+	}
+	
+	public static void main ( String[] args ) {
+		double[] vector = new double[MAX_VECTOR];
+		for ( int i = 0; i < MAX_VECTOR; i++ )
+			vector[i] = Math.random();
+		SumaFJ aux = new SumaFJ(vector, 0, vector.length-1);
+		aux.compute();
+
+	}
+}
+</pre>
+<p>El <em>framework fork-join</em> se ejecuta, por defecto, en un servicio
+de ejecución denominado
 <a class=clase target=_blank
 	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/ForkJoinPool.html>ForkJoinPool</a>.
 No vamos, de momento, a entrar en cómo funciona. Nos basta con pensar que
-hay un servicio con el que vamos a poder trabajar. Para utilizarlo, en
-algún punto de nuestro código invocaremos una instancia de la clase que
-extiende el <span class=clase>RecursiveAction</span> como muestra el
-código siguiente:
+hay un servicio con el que vamos a poder trabajar. Podemos también utilizarlo,
+explícitamente: en algún punto de nuestro código invocaremos una instancia
+de la clase que extiende el <span class=clase>RecursiveAction</span> como
+muestra el código siguiente:
 <pre>
 class Programa {
     ...
@@ -425,9 +469,10 @@ class Programa {
 }
 </pre>
 <p>Este <span class=clase>ForkJoinPool</span> tiene un método
-<span class=metodo>commonPool</span> que nos devuelve una referencia a
-un grupo de hilos estándar y al que podemos enviar nuestra tarea, con
-el método <span class=metodo>invoke</span> para que la ejecute en paralelo.
+<span class=metodo>commonPool</span> que nos devuelve una referencia
+al grupo de hilos estándar, apropiado para la mayoría de las aplicaciones.
+Podemos también enviar nuestra tarea, con el método
+<span class=metodo>invoke</span> para que la ejecute en paralelo.
 
 
 			</section>
