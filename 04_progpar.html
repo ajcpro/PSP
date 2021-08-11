@@ -473,6 +473,93 @@ class Programa {
 al grupo de hilos estándar, apropiado para la mayoría de las aplicaciones.
 Podemos también enviar nuestra tarea, con el método
 <span class=metodo>invoke</span> para que la ejecute en paralelo.
+<p>Estamos creando una clase que almacena un valor, <em>suma</em> para
+poderlo obtener más adelante. ¿Sería posible que <em>compute</em>, en lugar
+de un procedimiento, fuera una función? Si <em>compute</em> fuera una función
+recursiva sería muy sencillo algo como:
+<br><span class=code>return I.compute() + D.compute();
+<p>En el modelo de <em>FJ Framework</em> supondría que, de algún modo, ambas
+funciones deberían ejecutarse en paralelo, esperando a que ambos resultados
+estuvieran disponibles para realizar la suma a continuación. Esto tiene que
+ver con un concepto que se verá en el capítulo 5: el futuro o promesa. En
+cualquier caso, el <i>framework</i> nos proporciona un método sencillo de
+implementación de esta posibilidad. Nuestra clase no cambia, salvo porque
+debe extender a la clase
+<a class=clase target=_blank
+	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/RecursiveTask.html>RecursiveTask</a>,
+en lugar de a <span class=clase>RecursiveAction</span>. El método compute
+se transforma ahora en una función que devuelve un tipo de datos determinado.
+Como antes, podemos invocar <span class=metodo>fork</span> para la ejecución
+asíncrona y esperamos a que dicho valor esté disponible invocando al método
+<span class=metodo>join</span>.
+<pre class=code>
+class Suma extends <span class=modificado>RecursiveTask&lt;Double&gt;</span> {
+	double[] v;
+	int izq, dch;
+	<span class=modificado>// double suma; Innecesario</span>
+ 	<span class=modificado>Double</span> compute() {
+		if ( izq == dch )
+			<span class=modificado>return</span> vector[izq];
+		else {
+			int m = (izq + dch) / 2;
+			Suma I = new Suma(v, izq, m);
+			Suma D = new Suma(v, m+1, dch);
+			I.fork();
+			<span class=modificado>return D.compute() + I.join();</span>
+		}
+	}
+}
+</pre>
+<p>Vemos, en primer lugar, que <span class=clase>RecursiveTask</span> es
+una clase genérica y, por tanto, asignamos la clase de datos con los que
+va a trabajor al crearla: en este caso, <span class=clase>Double</span>.
+A continuación, hemos eliminado el atributo <em>suma</em>, al resultar
+innecesario: el valor es devuelto por la función. Finalmente, la ventaja
+de utilizar este <i>framework</i> es que la propia clase gestiona la
+utilización de un futuro, que nos devuelve con el método
+<span class=metodo>join</span>: tomará el valor de
+<span class=metodo>compute</span> cuando esté disponible. Podemos apreciar
+como, como antes, lanzamos la tarea para <em>I</em> pero ahora, en lugar de
+esperar tras la ejecución de la de <em>D</em>, podemos especificar la suma
+directamente, que no se realizará hasta que ambos valores estén disponibles.
+<p>Este ejemplo que estamos viendo es muy simple ya que solo genera dos
+tareas cada vez que se ejecuta: creamos una nueva instancia con
+<span class=metodo>fork</span> y la actual invoca
+<span class=metodo>compute</span>. También podríamos crear dos instancias y
+esperar a que ambas finalizaran. En ese caso, es más eficiente esperar la
+finalización en orden inverso al que han sido creadas:
+<br><span class=code>I.fork(); D.fork(); D.join(); I.join();
+<p>Si, por ejemplo, tuviéramos tres tareas, deberíamos, al menos, crear dos
+instancias con <span class=metodo>fork</span> y que la tercera ejecutara el
+<span class=metodo>compute</span>, aunque también podríamos crear tres
+instancias. Si el número de tareas es mayor, podemos, por ejemplo utilizar
+colecciones para almacenar esas tareas y lanzar, automáticamente, las
+instancias que sean necesarias con <span class=metodo>invokeAll</span>.
+Finalmente, recuperaremos sus valores con <span class=metodo>join</span>.
+<pre class=code>
+class Ejemplo extends RecursiveTask&lt;T&gt; {
+	...
+	Ejemplo (...) { ... }
+	...
+	protected T compute() {
+		ArrayList&lt;RecursiveTask&lt;T&gt;&gt; al =
+			 new ArrayList&lt;RecursiveTask&lt;T&gt;&gt;();
+		for ( int i = 0; i &lt; x; i++ ) {
+			...
+			al.add(new Ejemplo(params))
+		}
+		try {
+			invokeAll(al);
+			...
+			for ( RecursiveTask&lt;T&gt; rt: al ) {
+				operación con rt.join();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}
+</pre>
 
 
 			</section>
