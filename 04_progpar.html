@@ -19,6 +19,9 @@
 					<li><a href=#recursividad>Recursividad</a></li>
 					<li><a href=#creatarea>Creación de tareas</a></li>
 					<li><a href=#fjframework><em>Fork-Join Framework</em></a></li>
+					<li><a href=#amdhal>Ley de Amdhal</a></li>
+					<li><a href=#streams>Streams en Java</a></li>
+
 				</ol> 
 			</nav>
 			<section id=Recursividad>
@@ -560,8 +563,121 @@ class Ejemplo extends RecursiveTask&lt;T&gt; {
 	}
 }
 </pre>
+<p>Finalizamos este apartado comentado la forma en que el servicio de
+ejecución trabaja. Dispone de un conjunto de hilos, de manera que todos
+ellos intentan encontrar tareas, lanzadas con <span class=metodo>fork</span>,
+<span class=metodo>invokeAll</span>... y ejecutarlas; es decir, que cada hilo
+puede ejecutar más de una tarea. Por defecto, el número de hilos será igual
+al de procesadores que tenga el sistema. Podemos, no obstante, indicar
+cuántos hilos deseamos que sean utilizados en el constructor del servicio:
+<a class=clase target=_blank
+   href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/ForkJoinPool.html#%3Cinit%3E(int)>ForkJoinPool(int parallelism)</a>,
+haciendo uso del mismo como indica el código siguiente:
+<pre class=code>
+    ...
+ForkJoinPool ejecutor;
+    ...
+ejecutor = new ForkJoinPool(NÚMERO_DE_HILOS);
+    ...
+ejecutor.invoke(<i>instancia Recursive...</i>);
+    ...
+ejecutor.shutdown();
+    ...
+</pre>
+<p>El método <a class=clase target=_blank
+	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/ForkJoinPool.html#shutdown()>shutdown</a> no tiene
+efecto alguno cuando trabajamos con el <em>commonPool</em> pero, en este caso,
+es necesario para llevar a cabo una finalización ordenada de las tareas.
+			</section>
+			<section id=Amdhal>
+				<header>
+					<h1 id=amdhal>Ley de Amdhal</h1>
+				</header>
+<p>
+Suponemos que tenemos una secuencia de acciones: S1, S2, S3, S4; de manera
+que S2 y S3 pueden ejecutarse de forma asíncrona. Siguiendo el pseudocódigo
+que hemos visto, podemos representarlo con un <span class=palabra>ASYNC</span>
+de S2 y un <span class=palabra>FINISH</span> que engloba a S2 y S3:
+<span class=code>
+	S1 -       S1
+	S2 - ASYNC S2
+	S3 -       S3
+	     FINISH
+	S4 -       S4
+</span>
+lo represento sin llaves pero significa igualmente que S2 se ejecutará de
+forma asíncrona y esperaremos a la finalización (de lo que precede) antes
+de que se ejecute S4. En el formato que hemos visto en Java, podemos
+representarlo con el par Fork-Join, asumiendo que S2 fuera una
+<span class=clase>ForkJoinTask</span>:
+<span class=code>
+        S1 -       S1 - S1
+        S2 - ASYNC S2 - S2.fork()
+        S3 -       S3 - S3
+             FINISH   - S2.join()
+        S4 -       S4 - S4
+</span>
+<p>Vamos ahora a introducir un concepto denominado grafo computacional: un
+grafo dirigido cuyos nodos se corresponden con operaciones matemáticas; en
+nuestro caso, cada nodo se corresponderá con una de las operaciones
+secuenciales. A nosotros va a servirnos para modelar la ejecución en paralelo.
+El grafo es solo una abstracción que nos ayuda a pensar en el programa
+ejecutándose dinámicamente. En líneas generales, un grafo es una
+representación gráfica de nodos (o vértices), elementos que componen el
+gráfico, ejes (o aristas), líneas que unen los nodos, y caminos, conjunto
+de nodos unidos por ejes.
+<p>Así, empezamos por el nodo S1: lo representamos rodeando S1 en un círculo.
+A continuación, si nos fijamos en la versión FJ, se produce un <em>FORK</em>
+a S2: lo representamos con una flecha (y lo denominamos eje fork); la flecha
+indica que es dirigido: solo va de S1 a S2. Y justo a continuación del mismo,
+S1 continúa a S3 (eje continuar); y S3 continúa a S4. Pero existe un
+<em>JOIN</em>, por lo que tenemos un nuevo eje (que denominamos join) de S2 a
+S4. De este modo, con estos tres ejes, fork, join, y continuar, podemos
+modelar la ejecución de nuestro programa paralelo. Si no tuviéramos los nodos
+fork y join, nuestro grafo sería una línea secuencial con ejes continuar.
+<div class=image id=img_04_01>
+	<img src=imagenes/04_01_grafo.png style="width: 15em"
+	     alt="Grafo computacional con ejes fork, join y continuar">
+	<p class=caption>Grafo computacional de las tareas
+</div>
+<p>Una propiedad del grafo es que nos permite razonar qué instrucciones
+pueden ejecutarse en paralelo: ¿Existe un camino  dirigido de un nodo a
+otro? Por ejemplo, hay un camino ente S2 y S4: S2 y S4 no pueden ejecutarse
+en paralelo. De forma análoga, como no hay caminos entre S2 y S3, es posible
+la ejecución en paralelo.
+<p>
+Otra propiedad muy interesante de los grafos computacionales es que nos
+permiten razonar acerca del rendimiento del programa paralelo. El rendimiento,
+normalmente, se mide como una frecuencia de eventos por unidad de tiempo, ya
+que tiempo más bajo significa mayor rendimiento. Pero tendemos a hablar de
+rendimiento como tiempo o velocidad, incluyendo términos como mejora, en
+lugar de utilizar mayor (velocidad) o menor (tiempo).
+<p>Nosotros vamos a utilizar, como coste, un número asociado al tiempo: mayor
+coste, menor rendimiento. Imaginemos que el coste de ejecución de S1 es 1,
+los de S2 y S3, 10, y el S4, 1. Utilizamos dos métricas: trabajo 
+(<span class=palabra>work</span>) y duración, o lapso,
+(<span class=palabra>span</span>); el primero corresponde al coste total y el
+segundo al coste del camino más largo. A partir de estas métricas construimos
+la idea de <b>paralelismo ideal (<em>IP</em>)</b> como el trabajo dividido
+por la duración.
+<p>Así, el trabajo será la suma de los tiempos de ejecución de todas las
+tareas: <span class="font-family:monospace">1+10+10+1=22</span>. Para el
+cálculo de la duración tenemos dos caminos:
+<span class="font-family:monospace">S1 -> S2 -> S4</span> y
+<span class="font-family:monospace">S1 -> S3 -> S4</span>; en ambos casos,
+el coste es
+<span class="font-family:monospace">1+10+1=12</span>.
+<p>En este caso, el paralelismo ideal es muy pequeño:
+<span class="font-family:monospace">22/12</span>, que apenas llega a 2; pero
+hay que tener en cuenta que en un programa secuencial es 1, ya que el trabajo
+es igual a la duración.
 
 
+			</section>
+			<section id=Streams>
+				<header>
+					<h1 id=streams>Streams en Java</h1>
+				</header>
 			</section>
 			<footer>
 <nav class=pie>
