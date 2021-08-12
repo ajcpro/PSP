@@ -6,8 +6,18 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-06-14">
-		<meta name=modified content="2021-08-11">
+		<meta name=modified content="2021-08-12">
 		<link rel=stylesheet href="estilo.css">
+
+<!--
+	Soporte para la introducción de MathML
+	Sería mejor eliminarlo si es Firefox, con soporte nativo,
+	pero lo dejo para más adelante
+--!>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
 	</head>
 	<body>
 		<article>
@@ -655,7 +665,7 @@ lugar de utilizar mayor (velocidad) o menor (tiempo).
 <p>Nosotros vamos a utilizar, como coste, un número asociado al tiempo: mayor
 coste, menor rendimiento. Imaginemos que el coste de ejecución de S1 es 1,
 los de S2 y S3, 10, y el S4, 1. Utilizamos dos métricas: trabajo 
-(<span class=palabra>work</span>) y duración, o lapso,
+(<span class=palabra>work</span>) y duración
 (<span class=palabra>span</span>); el primero corresponde al coste total y el
 segundo al coste del camino más largo. A partir de estas métricas construimos
 la idea de <b>paralelismo ideal (<em>IP</em>)</b> como el trabajo dividido
@@ -668,10 +678,416 @@ cálculo de la duración tenemos dos caminos:
 el coste es
 <span class="font-family:monospace">1+10+1=12</span>.
 <p>En este caso, el paralelismo ideal es muy pequeño:
-<span class="font-family:monospace">22/12</span>, que apenas llega a 2; pero
-hay que tener en cuenta que en un programa secuencial es 1, ya que el trabajo
-es igual a la duración.
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+	<mrow>
+		<mi>IP</mi>
+		<mo>=</mo>
+		<mfrac>
+			<mrow>
+				<mi>W</mi>
+			</mrow>
+			<mrow>
+				<mi>S</mi>
+			</mrow>
+		</mfrac>
+		<mo>=</mo>
+		<mfrac>
+			<mrow>
+				<mn>22</mn>
+			</mrow>
+			<mrow>
+				<mn>12</mn>
+			</mrow>
+		</mfrac>
+	</mrow>
+</math>
+, que apenas llega a 2; pero hay que tener en cuenta que en un programa
+secuencial es 1, ya que el trabajo es igual a la duración.
+<div style="width:80%;margin-left:10%;">
+	<p><b>La mejora en el rendimiento de un sistema está limitada por la
+	fracción de tiempo que (dicho sistema) pueda ser más rápido.</b>
+</div>
+<p>La
+<a target=_blank href=https://es.wikipedia.org/wiki/Ley_de_Amdahl>ley de Amdhal</a>
+define la ganancia de rendimiento o aceleración (<i><b>speedup</b></i>) que
+puede lograrse al utilizar una característica determinada del sistema, que
+es más rápida que la original. La aceleración es la relación entre el
+rendimiento de la tarea usando la mejora y el rendimiento sin usarla o,
+alternativamente, el tiempo de ejecución sin usar la mejora dividido por el
+tiempo de ejecución usando la mejora:
+<p>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+	<mrow>
+		<mtext>Aceleración</mtext>
+		<mo>=</mo>
+		<mfrac>
+			<mrow>
+				<mtext>
+Trabajo (coste) de la tarea sin utilizar la mejora
+				</mtext>
+			</mrow>
+			<mrow>
+				<mtext>
+Trabajo (coste) de la tarea utilizando la mejora cuando sea posible
+				</mtext>
+			</mrow>
+		</mfrac>
+	</mrow>
+</math>
+<p>Vamos a tratar de ver ahora cómo la Ley de Amdhal se aplica a lo que hemos
+contado.
+<p>Supongamos que tenemos una serie de tareas S1...S7, que siguen el grafo
+computacional de la figura. Algo interesante del grafo es que no nos importa
+de dónde vienen los ejes o si son de uno u otro tipo. Pero podemos pensar en
+su rendimiento; imaginemos que todas las tareas tienen un coste 1, excepto S6,
+que tiene un coste 10. Estamos interesados en la idea del tiempo de ejecución
+<em>T</em> en <em>P</em> procesadores, <em>T<sub>P</sub></em>.
+<p>Vamos a pensar cómo estas instrucciones del grafo computacional son
+planificadas en los procesadores. Supongamos que disponemos de una máquina
+con dos procesadores. El planificador hará que las instrucciones se repartan
+entre ambos: tras la ejecución de S1, el primer procesador podría ejecutar S2
+y S3, mientras que el segundo ejecutaría S4 y S5. A continuación, el primer
+procesador ejecutaría S6 y, finalmente, se ejecutaría S7.
+<p>Como vemos, con esta planificación, <em>T<sub>2</sub> = 14</em>. Los instantes en
+que el segundo procesador no está ejecutando instrucciones se denominan
+<span class=palabra>IDLE</span> (ocioso); uno de los objetivos de la
+paralelización es reducir al mínimo el tiempo en que el procesador permanece
+ocioso.
+<p>Una planificación más interesante se produciría si se tuviera conocimiento
+de que S6 tiene un coste superior y se diera prioridad a su ejecución, para
+que lo hiciera lo antes posible. De este modo, tras la ejecución de S1, el
+primer procesador podría ejecutar S6, mientras que el segundo ejecutaría S2 y
+S3, así como S4 y S5; el orden en que se ejecuten, empezando por S2 o por S4,
+es irrelevante, siempre que se garantice que S2 se ejecuta antes que S3 y que
+S4 lo hace antes que S5. A continuación, el primer procesador ejecutaría S7 y
+finalizaría. Con esta planificación, <em>T<sub>2</sub> = 12</em>.
+<p>Esta definición del tiempo de ejecución en <em>P</em> procesadores, depende
+de la planificación, pero podemos determinar algunas propiedades. Primero,
+¿qué sucede si <em>P = 1</em>? Podemos asegurar que <em>T<sub>1</sub> =
+<span class=palabra>WORK</span></em>, que en este caso, es 16. Análogamente,
+si tuviéramos un número infinito de procesadores, <em>T<sub>&#x221e;</sub> =
+<span class=palabra>SPAN</span></em>, que en este caso es 12.
+<p>De este modo, dado un número de procesadores <em>P</em>, podemos asegurar
+que <em>T<sub>&#x221e;</sub> &lt;= T<sub>P</sub> &lt;= T<sub>1</sub></em>. Y
+que la aceleración que obtenemos es la relación entre <em>T<sub>1</sub></em>
+y <em>T<sub>P</sub></em>, que coincide con el enunciado de la <b>ley de
+Amdahl</b>, que antes veíamos. De donde deducimos fácilmente que la
+<em>aceleración</em> es, obligatoriamente, menor o igual que <em>P</em>; y que
+es menor o igual que el <em>paralelismo ideal</em>. Es decir, está limitada
+por el número de procesadores de que disponemos pero, más importante, también
+por el paralelismo ideal del grafo computacional.
+<p>Nuestro objetivo al diseñar algoritmos paralelos es el de generar gráficos
+computacionales con un paralelismo ideal mayor que el número de procesadores
+disponible.
+<p>Cuando creamos una nueva instancia de ejecución, como ya se indicó al
+comparar la creación de procesos e hilos, se produce una sobrecarga de
+código, código que no pertenece a nuestro programa. Es decir, aunque
+dividamos el tiempo de ejecución por la mitad, ese tiempo será un poco mayor
+por los recursos dedicados a crear la/s instancia/s de ejecución.
+<p><em>¡Atención! Las ecuaciones mostradas a continuación no pretenden ser un
+	desarrollo matemático; solo una forma de explicar el concepto que se
+	desea introducir. Y para el que hacemos uso del <i>FJ Framerowk</i>,
+	que ya conocemos.</em>
+<p>Para un tiempo de ejecución <em>T</em>, al aplicar paralelismo, tendremos
+un tiempo de ejecución
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+	<mrow>
+		<mfrac>
+			<mrow>
+				<mi>T</mi>
+			</mrow>
+			<mrow>
+				<mn>2</mn>
+			</mrow>
+		</mfrac>
+		<mo>+</mo>
+		<mi>X</mi>
+	</mrow>
+</math>
+, suponiendo que lo dividimos por 2 y <em>X</em> es el tiempo que el sistema
+requiere para que ello sea posible. En una nueva ejecución, ese tiempo sería
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+	<mrow>
+		<mfrac>
+			<mrow>
+				<mi>T</mi>
+			</mrow>
+			<mrow>
+				<mn>4</mn>
+			</mrow>
+		</mfrac>
+		<mo>+</mo>
+		<mn>3</mn>
+		<mi>X</mi>
+	</mrow>
+</math>
+y así, sucesivamente, hasta llegar a hacer <em>n</em> particiones:
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+	<mrow>
+		<mfrac>
+			<mrow>
+				<mi>T</mi>
+			</mrow>
+			<mrow>
+		<!--	<mroot> 2 n </mroot> -->
+		<msup>
+			<mn>2</mn>
+			<mi>n</mi>
+		</msup>
+			</mrow>
+		</mfrac>
+		<mo>+</mo>
+		<mo>(</mo>
+		<!--	<mroot> 2 n </mroot> -->
+		<msup>
+			<mn>2</mn>
+			<mi>n</mi>
+		</msup>
+		<mo>-</mo>
+		<mn>1</mn>
+		<mo>)</mo>
+		<mi>X</mi>
+	</mrow>
+</math>
+. Podemos realizar el mismo desarrollo calculándolo para 3 particiones
 
+<table border id=tabla_04_01>
+	<thead>
+		<tr>
+			<th>Particiones</th>
+			<th colspan=2>Tiempo</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>0</td>
+			<td>T</td>
+			<td>T</td>
+		</tr>
+		<tr>
+			<td>1</td>
+			<td>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mrow>
+                <mfrac>
+                        <mrow>
+                                <mi>T</mi>
+                        </mrow>
+                        <mrow>
+                                <mn>2</mn>
+                        </mrow>
+                </mfrac>
+                <mo>+</mo>
+                <mi>X</mi>
+        </mrow>
+</math>
+			</td>
+			<td>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mrow>
+                <mfrac>
+                        <mrow>
+                                <mi>T</mi>
+                        </mrow>
+                        <mrow>
+                                <mn>3</mn>
+                        </mrow>
+                </mfrac>
+                <mo>+</mo>
+                <mn>2</mn>
+                <mi>X</mi>
+        </mrow>
+</math>
+			</td>
+		</tr>
+		<tr>
+			<td>2</td>
+			<td>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mrow>
+                <mfrac>
+                        <mrow>
+                                <mi>T</mi>
+                        </mrow>
+                        <mrow>
+                                <mn>4</mn>
+                        </mrow>
+                </mfrac>
+                <mo>+</mo>
+                <mn>3</mn>
+                <mi>X</mi>
+        </mrow>
+</math>
+			</td>
+			<td>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mrow>
+                <mfrac>
+                        <mrow>
+                                <mi>T</mi>
+                        </mrow>
+                        <mrow>
+                                <mn>9</mn>
+                        </mrow>
+                </mfrac>
+                <mo>+</mo>
+                <mn>8</mn>
+                <mi>X</mi>
+        </mrow>
+</math>
+			</td>
+		</tr>
+		<tr>
+			<td>3</td>
+			<td>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mrow>
+                <mfrac>
+                        <mrow>
+                                <mi>T</mi>
+                        </mrow>
+                        <mrow>
+                                <mn>8</mn>
+                        </mrow>
+                </mfrac>
+                <mo>+</mo>
+                <mn>7</mn>
+                <mi>X</mi>
+        </mrow>
+</math>
+			</td>
+			<td>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mrow>
+                <mfrac>
+                        <mrow>
+                                <mi>T</mi>
+                        </mrow>
+                        <mrow>
+                                <mn>27</mn>
+                        </mrow>
+                </mfrac>
+                <mo>+</mo>
+                <mn>26</mn>
+                <mi>X</mi>
+        </mrow>
+</math>
+			</td>
+		</tr>
+		<tr>
+			<td colspan=3>
+				...
+		</tr>
+		<tr>
+			<td>n</td>
+			<td>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mrow>
+                <mfrac>
+                        <mrow>
+                                <mi>T</mi>
+                        </mrow>
+                        <mrow>
+                                <msup>
+                                        <mn>2</mn>
+                                        <mi>n</mi>
+                                </msup>
+                        </mrow>
+                </mfrac>
+                <mo>+</mo>
+                <mo>(</mo>
+                <msup>
+                        <mn>2</mn>
+                        <mi>n</mi>
+                </msup>
+                <mo>-</mo>
+                <mn>1</mn>
+                <mo>)</mo>
+                <mi>X</mi>
+        </mrow>
+</math>
+			</td>
+			<td>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mrow>
+                <mfrac>
+                        <mrow>
+                                <mi>T</mi>
+                        </mrow>
+                        <mrow>
+                                <msup>
+                                        <mn>3</mn>
+                                        <mi>n</mi>
+                                </msup>
+                        </mrow>
+                </mfrac>
+                <mo>+</mo>
+                <mo>(</mo>
+                <msup>
+                        <mn>3</mn>
+                        <mi>n</mi>
+                </msup>
+                <mo>-</mo>
+                <mn>1</mn>
+                <mo>)</mo>
+                <mi>X</mi>
+        </mrow>
+</math>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>Y, en general, para un algoritmo que realiza <em>p</em> divisiones en cada
+ejecución, tendremos que su tiempo de ejecución vendrá dado por:
+<p>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mrow>
+                <mfrac>
+                        <mrow>
+                                <mi>T</mi>
+                        </mrow>
+                        <mrow>
+                                <msup>
+                                        <mi>p</mi>
+                                        <mi>n</mi>
+                                </msup>
+                        </mrow>
+                </mfrac>
+                <mo>+</mo>
+                <mo>(</mo>
+                <msup>
+                        <mi>p</mi>
+                        <mi>n</mi>
+                </msup>
+                <mo>-</mo>
+                <mn>1</mn>
+                <mo>)</mo>
+                <mi>X</mi>
+        </mrow>
+</math>
+<p>De esa fórmula, podemos deducir, fácilmente, que, para algún número de
+divisiones, el tiempo que se necesita para que el sistema disponga los
+recursos necesarios para paralelizar es igual o mayor que el tiempo necesario
+para que se ejecute secuencialmente, por lo que es preferible ejecutarlo de
+forma secuencial. El <b>umbral paralelo</b> será una cantidad que represente
+el número de elementos, u otra característica, a partir de la cual
+obtengamos mejora al paralelizar, por lo que, cuando no se dé esa
+condición, ejecutaremos el algoritmo secuencial:
+<pre class=code>
+final int UMBRAL_PAR = Valor a partir del que palelizamos
+...
+if ( número <= UMBRAL_PAR ) {
+    // ejecuta operación secuencial
+} else {
+    // ejecuta operación Fork-Join
+}
+</pre>
+<p>En nuestro algoritmo de la suma de los elementos de un vector, por ejemplo,
+el umbral paralelo puede ser el número de elementos del vector, es decir,
+<em>dch - izq</em>. De ese modo, si el número de elementos es igual o menor
+que aquél para el que hemos determinado que obtendremos beneficio al
+paralelizarlo, realizaremos la suma de forma secuencial.
 
 			</section>
 			<section id=Streams>
