@@ -201,7 +201,7 @@ realizado con éxito:
 debido a la anidación. Además, pueden producirse otros tipos de errores de
 ejecución que no son capturables.
 <p>Los lenguajes modernos, especialmente los que soportan la programación
-orientada al objeto. incorporan un mecanismo de gestión del error a través
+orientada al objeto, incorporan un mecanismo de gestión del error a través
 de las denominadas
 <a target=_blank href=https://es.wikipedia.org/wiki/Manejo_de_excepciones>excepciones</a>.
 <p>La estructura del código en este caso, como antes, tiene dos partes, la
@@ -236,7 +236,69 @@ existen también dos tipos: las que no requieren comprobación y las que
 deben comprobarse. Las primeras se corresponden con errores de ejecución
 durante el funcionamiento normal de la JVM y se identifican con la superclase
 <a target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/RuntimeException.html>RuntimeException</a>. El resto son
-conocidas como <em>checked exceptions</em>
+conocidas como <em>checked exceptions</em>.
+<div class=image id=03_01 style="width:80%;margin-left:10%">
+	<img src=imagenes/03_01_1520193587846.jfif style="width:100%"
+	     alt="Jerarquia de excepciones en Java">
+	<p class=caption>Jerarquia de excepciones en Java<br>
+	Imagen tomada de la página de
+	<a target=_blank href=https://www.linkedin.com/pulse/java-exception-basics-daniel-chiuratto-seabra?articleId=6205828205065105408>Daniel Chiuratto Seabra</a>
+</div>
+
+<h2>Lanzamiento de excepciones</h2>
+<p>Cuando se produce un error y se genera una excepción, se dice que ésta se
+lanza: <em>throw</em>. Cualquier código es susceptible de lanzar una
+excepción, sea el entorno de trabajo de la JVM, una biblioteca o tu propio
+código. Ya hemos comentado que una excepción será una instancia de alguna
+subclase de <span class=clase>Throwable</span>.
+<p>Cuando la excepción se produce, el método que está ejecutándose se detiene
+prematuramente y no devuelve valor alguno. Además, el control no vuelve al
+punto desde el que el método fue invocado: se dirige al código que gestiona
+la excepción o se re-lanza hacia un método anterior, que pueda gestionar el
+error. Por supuesto, resulta posible <em>capturarla</em> (tener un punto en el
+código para el tratamiento de la excepción) y no tratarla (gestionar el
+error); sería conveniente, en cualquier caso, proporcionar algún tipo de
+mensaje o notificación.
+<p>Pero, ¿cómo indicamos en nuestro código que se ha producido una excepción?
+<ol>
+	<li>Construir un objeto de excepción. Una excepción, como hemos
+		indicado es una clase; por tanto, usaremos el operador
+		<span class=operador>new</span>.
+	<li>El lanzamiento de la excepción se lleva a cabo con el operador
+		<span class=operador>throw</span>. Lo habitual es realizar
+		ambas operaciones en una única instrucción
+		<br><span class=code><b>throw</b> new ExceptionType();</span>
+	<li>Documentar que puede producirse la excepción y por qué. Se incluye
+		en la documentación Javadoc del método:
+		<br><span class=code style="white-space:normal">
+		<b>@throws</b> ExceptionType
+		               causa_que_provoca_el_lanzamiento</span>
+</ol>
+<h3>Excepciones <i>Runtime</i></h3>
+<p>Este tipo de excepciones está reservado para indicar el uso incorrecto de
+algún API como, por ejemplo, que un método trate de acceder a un miembro de
+un objeto a través de una referencia a <em>null</em>. Estas excepciones,
+además, pueden producirse en cualquier lugar de un programa y ser muy
+numerosas. Tener que añadir código para su tratamiento reduciría la claridad
+del programa por lo que no requieren ser tratadas y por ello, en ocasiones,
+los programadores pueden sentirse tentados a utilizar solo este tipo.
+En general, no deben lanzarse excepciones de este tipo, simplemente, por no
+tener que tratarlas. La idea básica es: utilízala si el cliente no puede
+hacer nada para recuperarse del error; si no, utiliza una <em>checked
+exception</em>.
+<p>Un caso cómún es el que hemos comentado antes
+<pre class=code>
+public Contacto ( String nombre, String telefono ) {
+	if ( nombre == null ) nombre = "";
+	if ( telefono == null ) telefono = "";
+	if ( nombre.length() == 0
+	  || telefono.length() == 0 )
+		throw new IllegalStateException(
+			 "Error creando contacto");
+	this.nombre = nombre;
+	this.telefono = telefono;
+}
+</pre>
 			</section>
 			<footer>
 <nav class=pie>
