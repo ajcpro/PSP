@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-08-12">
-		<meta name=modified content="2021-08-12">
+		<meta name=modified content="2021-08-16">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -41,7 +41,7 @@ comienza el programa. Es importante por dos razones:
 		varias tareas de finalización.
 </ol>
 <p>Aunque el hilo principal se crea de forma automática, podemos acceder al
-mismo a través del método estátivo <span class=metodo>currentThread</span>(),
+mismo a través del método estático <span class=metodo>currentThread</span>(),
 que devuelve una referencia al hilo desde el que es invocado.
 <pre class=code>
 public static void main(String[] args) {
@@ -155,8 +155,8 @@ deseamos que se ejecute.
 Si deseamos asignar un nombre al hilo al inicio de su ejecución, en lugar de
 utilizar <span class=metodo>setName</span>(), podemos hacerlo pasándolo como
 parámetro del constructor.
-<p>Por último, recordar que el modelo preferido para crear hilos no es éste:
-es el siguiente.
+<p>Por último, recordar que <b>el modelo preferido para crear hilos no es
+éste</b>: es el siguiente.
 <h3>Implementando Runnable</h3>
 <pre class=code>
 class MiHilo implements Runnable {
@@ -183,17 +183,19 @@ Runnable r = new Runnable ( ) {
 <p>También se puede crear un objeto de una clase anónima, cuyo ejemplo
 podemos ver que es muy similar al que usábamos con Thread.
 <pre class=code>
-Runnable r = () -> { Cuerpo };
+Runnable r = () -> { Cuerpo del hilo };
 </pre>
 <p>Una tercera forma de hacerlo es con la utilización de una función Lambda.
 Esto es así porque el interfaz solo tiene un método abstracto, lo que lo
 convierte en un interfaz funcional.
 <p>Finalmente, para ejecutarlo, pasamos el objeto de la clase que implementa
-Runnable al constructor del hilo, el método constructor de la clase Thread, e
-invocamos el método <span class=metodo>start</span>().
+Runnable (o la función lambda) al constructor del hilo, el método constructor
+de la clase Thread, e invocamos el método <span class=metodo>start</span>().
 <p>Podemos también asignar un nombre al hilo, en el constructor, pasándolo
-como segundo parámetro del mismo. Hay que tener en cuenta que el nombre es
+como segundo parámetro del mismo; hay que tener en cuenta que el nombre es
 del <span class=clase>Thread</span>, no del <span class=clase>Runnable</span>.
+Un error común es confundir el <em>thread</em> con el <em>runnable</em> y
+viceversa.
 <p>Es importante hacer notar que los hilos se crean cuando invocamos el
 método <span class=metodo>start</span>(), ejecutan las instrucciones que
 contiene el método <span class=metodo>run</span>() y finalizan cuando el
@@ -204,17 +206,18 @@ hilo. Esto significa que solo podemos invocar
 o de una subclase suya. El objeto, como cualquier otro, seguirá existiendo
 mientras haya una referencia al mismo pero el hilo en que se ejecuta no.
 <h2>Estados</h2>
-<p>Como sucedía con los procesos, también los hilos pueden encontrarse en
-diferentes
+<p>Como sucedía con los <a href=01_intro.html#estados>procesos</a>, también
+los hilos pueden encontrarse en diferentes
 <a target=_blank class=clase 
 	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Thread.State.html>estados de ejecución</a>.
 Los estados de los hilos en Java son independientes de cuál sea su estado en el
 S.O. y solo pueden encontrarse en uno de ellos en un momento dado.
-<div class=image id=img_05_01>
-	<img src=imagenes/05_01_estados.png style="width:80%;margin-left:10%"
+<div class=image id=img_05_01 style="width:80%;margin-left:10%">
+	<img src=imagenes/05_01_estados.png
 	     alt="Estados de ejecución de un hilo en Java">
 	<p class=caption>Diagrama de estados de ejecución de un hilo en Java<br>
-	&#169;<a target=_blank href=https://www.codejava.net/java-core/concurrency/understanding-thread-states-thread-life-cycle-in-java>Nam Ha Minh</a>
+	Imagen tomada de la página de
+	<a target=_blank href=https://www.codejava.net/java-core/concurrency/understanding-thread-states-thread-life-cycle-in-java>Nam Ha Minh</a>
 </div>
 <dl>
 	<dt class=palabra>NEW<dt>
@@ -243,9 +246,101 @@ S.O. y solo pueden encontrarse en uno de ellos en un momento dado.
 	<dt class=palabra>TERMINATED</dt>
 	<dd>El método <span class=metodo>run</span>() ha finalizado su
 	ejecución (sea normalmente o por una excepción).</dd>
+</dl>
+<h3>Ejemplo</h3>
+<p>Veamos, en un ejemplo, cómo creamos un nuevo hilo:
+<pre class=code>
+    Thread t = new Thread(new Runnable() {
+        public void run() {
+            Thread self = Thread.currentThread();
+            System.out.println(self.getName() + " es "
+                             + self.getState());
+            }
+        });
+</pre>
+<p>Lo hacemos con un objeto anónimo que instanciamos en el constructor del hilo.
+Su método <span class=metodo>run</span>() es muy sencillo: obtiene una
+referencia al objeto <span class=clase>Thread</span> e imprime su nombre y
+estado. La creación no significa que empiece a ejecutarse por lo que, si
+hacemos una primera llamada a <span class=metodo>getState</span>() devolverá
+el valor <span class=palabra>NEW</span>:
+<pre class=code>
+    System.out.println(t.getName() + " es " + t.getState());
+</pre>
+<p>Tras la invocación de start() se ejecutará el hilo invocando al método run().
+<pre class=code>
+    t.start();
+</pre>
+<p>Esto hará que <span class=metodo>getState</span>() se ejecute por segunda vez
+pero, ahora, lo hará dento del método <span class=metodo>run</span>(), en el
+nuevo hilo, por lo que la salida será: <span class=palabra>RUNNABLE</span>.
+<pre class=code>
+    t.join(); // Espera a la finalización del hilo
+</pre>
+<p>Hemos añadido un método nuevo, que no habíamos comentado hasta ahora:
+<span class=metodo>join</span>(). Como sabemos, <em>join</em> es la función
+que, tradicionalmente, se utiliza para esperar la finalización de la
+ejecución de otro proceso o tarea -y así lo utilizamos en el <i>fork-join
+framework</i>-. En este caso, hará que el hilo principal espere a la
+finalización del otro hilo, antes de continuar con su ejecución.
+Tras ello, finalizará la ejecución del hilo y continuará la del hilo principal.
+<pre class=code>
+    if ( t.getState() == Thread.State.TERMINATED ) {
+        System.out.println(t.getName() + " ha finalizado.");
+    }
+</pre>
+<p>Por último, comprobamos que el hilo ha finalizado examinando su estado.
+Podemos también aquí apreciar la diferencia entre el <em>hilo de ejecución</em>
+y el objeto de la clase <span class=clase>Thread</span>: podemos seguir
+utilizando la referencia a <em>t</em> aunque el hilo ya ha finalizado su
+ejecución. Además, como ya se ha indicado, no es posible volver a invocar el
+método <span class=metodo>start</span>().
+<p>A continuación, el código completo dentro de un programa:
+<pre class=code>
+public static void main ( String[] args ) throws InterruptedException {
+    Thread t = new Thread(new Runnable() {
+        public void run() {
+            Thread self = Thread.currentThread();
+            System.out.println(self.getName() + " es "
+                             + self.getState());
+            }
+        });
 
+    System.out.println(t.getName() + " es " + t.getState());
 
+    t.start();
 
+    t.join(); // Espera a la finalización del hilo
+
+    if ( t.getState() == Thread.State.TERMINATED ) {
+        System.out.println(t.getName() + " ha finalizado.");
+    }
+}
+</pre>
+<p>El método <span class=metodo>main</span>() lanza la excepción
+<span class=clase>InterruptedException</span>. Ésta es lanzada por el método
+<span class=metodo>join</span>() cuando otro hilo ha interrumpido a éste.
+Dado que este programa no define otro hilo que pueda causar la interrupción,
+resulta innecesario capturarla.
+<h2>Prioridad</h2>
+<p>¿Cuál es el hilo preferido para la ejecución, en caso de existir muchos
+hilos? ¿Cómo decide el planificador cuál se ejecuta de aquellos en estado
+<span class=palabra>RUNNABLE</span>?
+<p>Cada hilo tiene un valor de prioridad; esta prioridad es un valor numérico
+entre <span class=palabra>MIN_PRIORITY</span>, que vale 1, y
+<span class=palabra>MAX_PRIORITY</span>, que vale 10; se define también el
+valor <span class=palabra>NORM_PRIORITY</span>, que es 5, valor asignado al
+hilo si no se ha definido otra cosa. Por defecto, cuando un hilo se crea,
+hereda la prioridad del hilo desde el que es creado.
+<p>En líneas generales, Java utiliza un planificador apropiativo pero, a la
+hora de elegir qué hilo se ejecutará, lo selecciona de entre aquellos que
+tienen mayor prioridad. No obstante, el método
+<a target=_blank class=metodo
+   href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Thread.html#yield()>yield</a>() indica al planificador que está dispuesto a
+detenerse, aunque el planificador puede ignorar este hecho: comprobará si
+existe algún otro hilo con igual o mayor prioridad y, en caso de que no,
+continuará la ejecución de este hilo. Según la documentación, no suele ser
+apropiado utilizar este método.
 
 
 			</section>
