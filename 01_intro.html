@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-03-19">
-		<meta name=modified content="2021-08-06">
+		<meta name=modified content="2021-08-18">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -35,7 +35,7 @@ a ejecutar, escritas directamente o traducidas desde un código fuente en
 un lenguaje de programación. No	obstante, para mejorar su eficiencia, el
 ejecutable -una vez en la memoria de la computadora- se divide en varias secciones o segmentos: texto, datos, montón
 (o montículo) y pila.
-<div class=image id=img_01_01>
+<div class=image id=img_01_01 style="width:80%; margin-left:10%">
 	<img src=imagenes/01_01_ejecutable.png
 	     alt="Secciones de un ejecutable: pila,
 	     zona libre de memoria, montón, datos y código">
@@ -77,7 +77,7 @@ otro. El direccionamiento se realiza mediante una técnica denominada
 número de segmento (s) y desplazamiento dentro del segmento (d); el
 procesador mantiene un registro de la dirección "s" en la que empieza cada
 segmento, con lo que el programa solo tiene que trabajar con "d".
-<div class=image id=img_01_02>
+<div class=image id=img_01_02 style="width:80%; margin-left:10%">
 	<img src=imagenes/01_02_segmentacion.png
 	     alt="Segmentación de la memoria">
 	<p class=caption>División de la memoria en segmentos para ejecutar
@@ -151,9 +151,9 @@ de los recursos (programa servidor) de la utilización de los mismos
 (programa cliente). Aunque el servidor puede ser un programa cualquiera,
 lo normal es que éste no interactúe con el usuario, por lo que lo más común
 es que se ejecute como demonio; el nombre del programa suele añadir la letra
-"d" al final.
-<div class=image id=img_01_03>
-	<img src=imagenes/01_03_servicio.png
+"<b>d</b>" al final.
+<div class=image id=img_01_03 style="width:80%; margin-left:10%">
+	<img src=imagenes/01_03_servicio.png style="width:80%"
 	     alt="Paradigma cliente-servidor">
 	<p class=caption>Paradigma cliente-servidor en dos niveles
 </div>
@@ -202,8 +202,8 @@ ejecución-. Este método de conmutación rápida de un proceso a otro se denomi
 	<dd>No puede ejecutarse porque está a la espera de que ocurra
 		un acontecimiento concreto (habitualmente, un evento de E/S)
 </dl>
-<div class=image id=img_01_04>
-	<img src=imagenes/01_04_estados_proceso.png
+<div class=image id=img_01_04 style="width:80%; margin-left:10%">
+	<img src=imagenes/01_04_estados_proceso.png style="width:60%"
 	     alt="Estados de un proceso">
 	<p class=caption>Estado de un proceso en el S.O.
 	<br>Fuente: Sistemas operativos. Diseño e implementación.
@@ -339,6 +339,64 @@ pero comunicadas.
 				<header>
 					<h1 id=jvm>La máquina virtual de Java</h1>
 				</header>
+<aside>
+Toda la información aquí mostrada está basada en la 
+<a href=https://docs.oracle.com/javase/specs/jvms/se14/html/index.html>especificación de la JVM</a>, más concretamente, en los puntos 1.1, 1.2 y 2.5. La
+introducción a los parámetros de la aplicación <em>java</em>, en su página
+de manual.
+</aside>
+<p>En un principio, la <em>Java platform</em> se desarrolló con la idea de
+proporcionar un entorno seguro de despliegue de componentes software, con
+soporte para múltiples plataformas. El éxito de la <i>World Wide Web</i> hizo
+que creciera el interés en estas características hasta nuestros días,
+definiendo Java como un <em><b>WORA</b></em> (Write Once Run Everywhere), que
+significa que el programador puede desarrollar su software en Java y éste se
+podrá ejecutar en cualquier sistema con soporte al <em>entorno de ejecución
+de Java</em>.
+<p>Un componente fundamental de este entorno, obviamente, es la
+<em><b>JVM</b></em> (Máquina Virtual de Java). La JVM es un ordenador
+abstracto que, como una máquina real, tiene un conjunto de instrucciones y
+gestiona varias áreas de memoria en tiempo de ejecución. La JVM, en realidad
+no sabe nada acerca del lenguaje de programación Java, aparte de un formato
+binario particular: el formato de <em>fichero <b>class</b></em>. Este tipo de
+fichero contiene instrucciones de la JVM (código denominado
+<em><b>bytecode</b></em>), una tabla de símbolos e información auxiliar. Un
+fichero <em>.class</em> es el resultado de compilar, con el compilador de
+Java, vuestro fichero <em>.java</em>. En realidad,
+cualquier lenguaje de programación, no necesariamente Java, se podría utilizar
+para generar código que se ejecute en la JVM.
+
+<h2>Organización de la memoria</h2>
+<p>Decimos que la JVM es una máquina abstracta; eso significa que nuestros
+programas tendrán que estar organizados en la memoria como en una máquina
+real o de modo similar. De hecho, el modelo no difiere mucho del de la
+segmentación que veíamos al principio.
+<p>En nuestro modelo empezábamos por la sección de texto. En la JVM esto es
+denominado <em><b>Method Area</b></em>. Contiene el código de la clases que,
+dependiendo de la implementación, puede ser de tamaño fijo o variable; es
+decir, que, en caso de ser variable, puede crecer o disminuir según se
+requiera. Tanto ésta como el resto de áreas que vamos a describir, en caso de
+requerir más memoria de la disponible, generará un error
+<a class=clase target=_blank
+   href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/OutOfMemoryError.html>OutOfMemoryError</a> de la JVM.
+<br>Nota: En el capítulo 3 se explicarán las excepciones.
+<p>A continuación, veíamos la sección de datos. En el caso de la JVM ésta se
+puede identificar con la <em><b>Run-Time Constant Pool</b></em>. Pero este
+área es por clase o interface y contiene mucha más información que la típica,
+para esta sección, en un programa normal. Además, la memoria utilizada para la
+sección de la JVM es tomada de la <em><b>Method Area</b></em>, creándose
+cuando la JVM construye la clase o el interfaz.
+<p>Sea ahora el área equivalente al montón: <em><b>Heap</b></em>. Esta zona
+de memoria, que almacenará los objetos creados durante la ejecución del
+programa, puede, como antes la <em><b>Method Area</b></em>, ser de tamaño fijo
+o variable. Lo interesante de la misma es que, como los objetos de Java no son
+liberados de forma explícita, debe existir un sistema gestor de almacenamiento
+automático, denominado <b>recolector de basura</b> (<i>garbage collector</i>).
+La JVM no especifica cómo debe ser dicho gestor y deja al implementador elegir
+la técnica a utilizar.
+<p>Y llegamos a la pila.
+
+<h3>Parámetros de la JVM</h>
 			</section>
 			<footer>
 <nav class=pie>
