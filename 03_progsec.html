@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-06-11">
-		<meta name=modified content="2021-08-06">
+		<meta name=modified content="2021-08-18">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -265,7 +265,7 @@ mensaje o notificación.
 		indicado es una clase; por tanto, usaremos el operador
 		<span class=operador>new</span>.
 	<li>El lanzamiento de la excepción se lleva a cabo con el operador
-		<span class=operador>throw</span>. Lo habitual es realizar
+		<a class=operador target=_blank href=https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.18>throw</a>. Lo habitual es realizar
 		ambas operaciones en una única instrucción
 		<br><span class=code><b>throw</b> new ExceptionType();</span>
 	<li>Documentar que puede producirse la excepción y por qué. Se incluye
@@ -286,20 +286,251 @@ En general, no deben lanzarse excepciones de este tipo, simplemente, por no
 tener que tratarlas. La idea básica es: utilízala si el cliente no puede
 hacer nada para recuperarse del error; si no, utiliza una <em>checked
 exception</em>.
-<p>Un caso cómún es el que hemos comentado antes
+<p>Un caso cómún es el que hemos comentado antes: el uso incorrecto del API.
+Recordemos el ejemplo de la agenda:
+<pre class=code>
+public Contacto datos ( String clave ) {
+	if ( clave == null )
+		throw new <a class=clase target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/NullPointerException.html>NullPointerException</a>(
+			 "Clave nula en datos");
+	if ( clave.length() == 0 )
+		throw new <a class=clase target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/IllegalArgumentException.html>IllegalArgumentException</a>(
+			 "Clave vacía en datos");
+	return agenda.buscar(clave);
+}
+</pre>
+<p>Vemos dos situaciones de error producidas, en el primer caso, porque la
+referencia que recibe la función es <em>null</em>; en el segundo, la clave
+está vacía. Si no se produce ninguna de esas situaciones, el método
+prosigue con normalidad. Podemos apreciar también que hemos añadido un
+argumento al constructor de la excepción: permite añadir un mensaje que puede
+ser recuperado posteriormente con el método
+<a class=metodo target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Throwable.html#getMessage()>getMessage</a>().
 <pre class=code>
 public Contacto ( String nombre, String telefono ) {
 	if ( nombre == null ) nombre = "";
 	if ( telefono == null ) telefono = "";
 	if ( nombre.length() == 0
 	  || telefono.length() == 0 )
-		throw new IllegalStateException(
+		throw new IllegalArgumentException(
 			 "Error creando contacto");
 	this.nombre = nombre;
 	this.telefono = telefono;
 }
 </pre>
+<p>Ejemplo similar al anterior: al crear un nuevo contacto necesitamos tener
+sus dos componentes ya que, si uno de ellos no está disponible, la instancia
+no puede existir. 
+
+<h3>Cláusula <em>throws</em></h3>
+<p>Si bien las excepciones que no necesitan ser comprobadas tampoco necesitan
+ser declaradas, el resto sí. Bien sea porque el método genera la excepción,
+bien porque invoca a otro método que la genera y éste no la trata, debe
+especificar que puede lanzar la excepción.
+<p>Para indicar que un método puede (re)lanzar una o más excepciones debemos
+añadir la <em>cláusula throws</em> a la firma del método:
+<pre class=code>
+public void metodo ( Object parametro )
+	throws <a class=clase target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/io/IOException.html>IOException</a>, <a class=clase target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/IndexOutOfBoundsException.html>IndexOutOfBoundsException</a> {
+	// Código que puede provocar la excepción
+	// pero no la gestiona
+}
+</pre>
+<p>La <em>cláusula throws</em> contiene la palabra reservada <em>throws</em>,
+seguida de una lista, separada por comas, de todas las excepciones que pueden
+ser lanzadas por el método. Se añade a la firma del método, es decir, se
+coloca tras la lista de argumentos y antes del bloque que define el ámbito
+del método.
+<p>Por último, la excepción <span class=clase>IndexOutOfBoundsException</span>
+es una <em>unchecked excepction</em>, por lo que no tiene que se comprobada;
+ello supone que no es obligatorio incluirla en la <em>cláusula throws</em>,
+pudiendo haber escrito:
+<pre class=code>public void metodo ( Object parametro )
+	throws IOException {
+	...
+</pre>
+
+<h2>Tratamiento de las excepciones</h2>
+<p>Hasta ahora sabemos que las excepciones pueden ser lanzadas por la propia
+JVM, por código de bibliotecas que estamos utilizando o, incluso, por nuestro
+propio código, utilizando <em>throw</em>.
+<p>Sabemos también que podemos no tratarlas y dejar que sea el método que
+invocó al que se está ejecutando actualmente el que lo haga; para ello
+utilizamos <em>throws</em>, si la excepción debe ser comprobada. Este es el
+primer modo posible de tratar una excepción: la <b>propagación</b>. La
+excepcíón irá siendo lanzada a los métodos invocantes hasta alcanzar uno que
+la trate o, en caso de que ningún método la gestione, lo hará la JVM
+imprimiendo la traza de la pila de llamadas del programa y finalizándolo.
+<p>El método que sea responsable de tratar la excepción lo hará a través de lo
+que se conoce como bloque <em><b>try-catch</b></em>, que java denomina
+sentencia <a class=operador target=_blank href=https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.20>try</a>:
+<pre class=code>
+try {
+	// código que puede generar error
+} catch ( ExceptionType e ) {
+	// código que gestiona el error
+}
+</pre>
+<p>Vemos que, en realidad, se compone de dos bloques: el bloque
+<em><b>try</b></em> y el bloque <em><b>catch</b></em>.
+<p>El marcado como <em>código que puede generar error</em> corresponderá a
+una o más sentencias susceptibles de que, al ejecutarse, generen alguna
+excepción. Si sucede dicha excepción dentro del bloque <em><b>try</b></em>,
+ésta es tratada por el gestor asociado al mismo: el bloque
+<em><b>catch</b></em>.
+<p>El ámbito del bloque <em><b>catch</b></em> está restringido al bloque
+<em><b>try</b></em> que lo precede y se especifica como si se tratara de un
+método llamado <em>catch</em>. Proporciona soporte al tipo de excepción
+indicado por su argumento que, claro está, debe ser una clase que hereda de
+<span clase=class>Throwable</span> a cuya instancia hemos denominado
+<em>e</em>. El marcado como <em>código que gestiona el error</em>
+corresponderá a una o más sentencias para el tratamiento de la excepción,
+pudiendo hacer referencia a la misma a través del identificador <em>e</em>.
+<p>Aunque se ha comentado antes que, al menos, sería conveniente imprimir un
+mensaje o notificar el error de algún modo, tratar las excepciones tiene como
+objetivo recuperarse de un error, solicitar asistencia al usuario para que
+tome una decisión o propagar el error utilizando lo que se conoce como
+<b>excepciones encadenadas</b> (<em><b>chained exceptions</b></em>), que
+veremos más adelante.
+<p>Resulta posible tratar más de una excepción, que pueda producirse dentro de
+un bloque <em><b>try</b></em>, encadenando múltiples bloques
+<em><b>catch</b></em>, uno por excepción:
+<pre class=code>
+try {
+	// código que puede generar error
+} catch (ExceptionType2 e2) {
+	// código que gestiona e2
+} catch (ExceptionType1 e1) {
+	// código que gestiona e1
+}
+</pre>
+<p>En caso de producirse una excepción y que ésta se corresponda con alguna de
+las indicadas en los difrentes <em><b>catch</b></em>, se elige el bloque de la
+que aparezca primero y se ejecuta. Si el bloque finaliza correctamente, la
+sentencia <span class=operador>try</span> finaliza correctamente; en caso
+contrario, también la sentencia <span class=operador>try</span> finalizará
+con el error del bloque <em><b>catch</b></em>. Si la excepción no se
+corresponde con ninguna de las indicadas en las cláusulas
+<em><b>catch</b></em>, se propagará.
+<p>Resulta posible indicar excepciones genéricas, como
+<span class=clase>Throwable</span> o la propia
+<span class=clase>Exception</span>. También, especificar simultáneamente, en
+diferentes cláusulas <em><b>catch</b></em>, una excepción genérica y otra/s
+que sea/n subclase/s suya/s. En este caso, cuanto más genérica sea, deberá
+especificarse más tarde; se elige el bloque correspondiente a la que antes
+aparece en el código, de las que coinciden con el error que se ha producido.
+<p>Una cláusula <em><b>catch</b></em> puede gestionar más de un tipo de
+excepción. Esto resulta conveniente cuando el código del bloque a ejecutar
+para tratar más de un error es el mismo. La forma de hacerlo es especificando
+la lista de excepciones que puede tratar, separadas por el símbolo de la barra
+vertical (<em>|</em>), en lugar de una única excepción:
+<pre class=code>
+try {
+	// código que puede generar error
+} catch (ExceptionTypeA|ExceptionTypeB e) {
+	// código que gestiona ambos tipos de error
+}
+</pre>
+
+<h3>Claúsula <em>finally</em></h3>
+<p>Si se especifica, el bloque <em><b>finally</b></em> se ejecuta
+<b>siempre</b>, una vez ha finalizado el bloque <em><b>try</b></em>. Se
+especifica tras el último <em><b>catch</b></em>:
+<pre class=code>
+try {
+	// código que puede generar error
+} catch (ExceptionType e) {
+	// código que gestiona el error
+} finally {
+	// código que se ejecuta siempre
+}
+</pre>
+<p>Que siempre se ejecute garantiza que lo hará si el bloque
+<em><b>try</b></em> termina correctamente pero también si se produce un error.
+También si se ejecuta un bloque <em><b>catch</b></em>, termine correctamente
+o no. Los únicos casos en los que no se puede garantizar que se ejecutará es
+en aquellos en los que la JVM deje de funcionar antes de ejecutarlo: mientras
+está en ejecución el bloque <em><b>try</b></em> o uno <em><b>catch</b></em>.
+O en un programa multihilo, si el hilo en ejecución es interrumpido o
+finalizado, análogamente, antes de entrar en el bloque <em><b>finally</b></em>.
+<p>La claúsula <em><b>finally</b></em>, además de el tratamiento de las
+excepciones, permite al programador introducir código de limpieza de recursos
+que, de otro modo, podría ser olvidado; por ejemplo, por usar un
+<span class=operador>return</span>. Es por ello una buena práctica
+<b>siempre</b> incluirlo, ya sea para cerrar ficheros o cuaquier otro tipo de
+código de limpieza, aun cuando no se espere que haya excepciones (y no
+incluyamos ningún bloque <em><b>catch</b></em>).
+
+<h3>Métodos generales</h3>
+<p>Además del ya comentado <span class=metodo>getMessage</span>(), y los
+constructores de la clase <span class=clase>Throwable</span>, con y sin
+mensaje, un par de métodos más suelen ser muy útiles:
+<dl>
+	<dt>
+<a class=metodo
+	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Throwable.html#getMessage()>getMessage()</a></dt>
+	<dd></dd>
+<a class=metodo
+	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Throwable.html#toString()>toString</a></dt>
+	<dd></dd>
+</dl>
+
+<h2>Excepciones de usuario</h2>
+<p>A la hora de determinar qué excepción debemos lanzar si se ha producido un
+error, el API de Java nos proporciona una gran cantidad de ellas pero, si ello
+permite proporcionar una mejor información sobre el error, también resulta
+posible definir nuestros propios tipos de <span class=clase>Exception</span>.
+Podemos extender tanto <span class=clase>Exception</span> como
+<span class=clase>RunTimeException</span>, según necesitemos que sean o no
+comprobadas.
+<pre class=code>
+public Class MiException extends Exception {
+	public MiException ( ) {
+		super();
+	}
+	public MiException ( String msg ) {
+		super(msg);
+	}
+}
+</pre>
+<p>El ejemplo anterior es lo más simple que podemos hacer para crear nuestra
+propia excepción: creamos una clase que hereda de
+<span class=clase>Exception</span> y, en el constructor, invocamos
+el de la superclase.
+<p>Pero estamos creando una nueva clase, por lo que ésta puede tener más
+funcionalidades, además de las que nos proporciona
+<span class=clase>Exception</span>.
+<pre class=code>
+public Class MiException extends Exception {
+	private String clave;
+	public MiException ( ) {
+		clave = "";
+	}
+	public MiException ( String clave ) {
+		super();
+		this.clave = clave;
+	}
+	public String getClave ( ) {
+		return clave;
+	}
+	public String toString ( ) {
+		return "La clave es: " + clave;
+	}
+}
+</pre>
+<p>En este caso hemos modificado la funcionalidad, por ejemplo, redefiniendo
+el método <span class=metodo>toString</span>(): en caso de imprimir el objeto
+al que hemnos asignado un nombre en el bloque <em><b>catch</b></em>, se
+escribirá esa frase. Por supuesto, podríamos haber creado un nuevo constructor
+al que, en lugar de pasarle una cadena, podríamos haberle pasado un número o
+la referencia al objeto que ha causado el error, etc. Y, por supuesto, podemos
+crear subclases que definan mejor el tipo de error de usuario que queremos
+especificar.
+<p style="font-size:1.2em">Para una mejor legibilidad del código, añadiremos
+<b>siempre</b> el sufijo <b>Exception</b> a las excepciones que creemos
+nosotros y a las subclases de éstas.
 			</section>
+			<a href=https://docs.oracle.com/javase/tutorial/essential/exceptions/index.html>Manual</a>
 			<footer>
 <nav class=pie>
         <a class=previo href=02_multip.html>Programación multiproceso</a>
