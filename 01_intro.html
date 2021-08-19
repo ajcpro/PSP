@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-03-19">
-		<meta name=modified content="2021-08-18">
+		<meta name=modified content="2021-08-19">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -345,7 +345,7 @@ Toda la información aquí mostrada está basada en la
 introducción a los parámetros de la aplicación <em>java</em>, en su página
 de manual.
 </aside>
-<p>En un principio, la <em>Java platform</em> se desarrolló con la idea de
+<p>En un principio, la <i>Java platform</i> se desarrolló con la idea de
 proporcionar un entorno seguro de despliegue de componentes software, con
 soporte para múltiples plataformas. El éxito de la <i>World Wide Web</i> hizo
 que creciera el interés en estas características hasta nuestros días,
@@ -356,14 +356,14 @@ de Java</em>.
 <p>Un componente fundamental de este entorno, obviamente, es la
 <em><b>JVM</b></em> (Máquina Virtual de Java). La JVM es un ordenador
 abstracto que, como una máquina real, tiene un conjunto de instrucciones y
-gestiona varias áreas de memoria en tiempo de ejecución. La JVM, en realidad
+gestiona varias áreas de memoria en tiempo de ejecución. La JVM, en realidad,
 no sabe nada acerca del lenguaje de programación Java, aparte de un formato
 binario particular: el formato de <em>fichero <b>class</b></em>. Este tipo de
 fichero contiene instrucciones de la JVM (código denominado
 <em><b>bytecode</b></em>), una tabla de símbolos e información auxiliar. Un
 fichero <em>.class</em> es el resultado de compilar, con el compilador de
-Java, vuestro fichero <em>.java</em>. En realidad,
-cualquier lenguaje de programación, no necesariamente Java, se podría utilizar
+Java, vuestro fichero <em>.java</em>. 
+Cualquier lenguaje de programación, no necesariamente Java, se podría utilizar
 para generar código que se ejecute en la JVM.
 
 <h2>Organización de la memoria</h2>
@@ -379,7 +379,8 @@ requiera. Tanto ésta como el resto de áreas que vamos a describir, en caso de
 requerir más memoria de la disponible, generará un error
 <a class=clase target=_blank
    href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/OutOfMemoryError.html>OutOfMemoryError</a> de la JVM.
-<br>Nota: En el capítulo 3 se explicarán las excepciones.
+<br>Nota: En el <a href=03_progsec.html>capítulo 3</a> se explican las
+excepciones.
 <p>A continuación, veíamos la sección de datos. En el caso de la JVM ésta se
 puede identificar con la <em><b>Run-Time Constant Pool</b></em>. Pero este
 área es por clase o interface y contiene mucha más información que la típica,
@@ -394,7 +395,20 @@ liberados de forma explícita, debe existir un sistema gestor de almacenamiento
 automático, denominado <b>recolector de basura</b> (<i>garbage collector</i>).
 La JVM no especifica cómo debe ser dicho gestor y deja al implementador elegir
 la técnica a utilizar.
-<p>Y llegamos a la pila.
+<p>Y finalizamos con la pila: <em><b>Java Virtual Machine Stack</b></em>. A
+diferencia del resto de áreas, que son comunes para todos el programa, la pila
+es exclusiva, y privada, de cada hilo; es decir, que habrá tantas pilas como
+hilos, creándose a la vez que éstos. Almacena las variables locales y la
+información necesaria para la invocación de métodos y su retorno. Como antes,
+pueden ser de tamaño fijo o variable, según la implementación. Además de el
+<span class=clase>OutOfMemoryError</span>, puede generar uno
+<a class=clase target=_blank
+   href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/StackOverflowError.html>StackOverflowError</a>
+si el programa requiere una pila mayor de la permitida.
+<p>Aunque no es un área de memoria propiamente dicha, la especificación
+contiene también un <em><b>pc Register</b></em>, contador de programa, que es
+propio de cada hilo y contiene la dirección de la instrucción de la JVM que
+está en ejecución.
 
 <h3>Parámetros de la JVM</h>
 			</section>
