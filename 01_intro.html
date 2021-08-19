@@ -30,11 +30,12 @@
 					<h1 id=ejecutable>Qué es un ejecutable</h1>
 				</header>
 <p>Un ejecutable es un archivo binario que la máquina reconoce como un
-programa. El fichero binario podría ser una secuencia de las instrucciones
+programa. El fichero binario se corresponderá con una secuencia de las
+instrucciones
 a ejecutar, escritas directamente o traducidas desde un código fuente en
 un lenguaje de programación. No	obstante, para mejorar su eficiencia, el
-ejecutable -una vez en la memoria de la computadora- se divide en varias secciones o segmentos: texto, datos, montón
-(o montículo) y pila.
+ejecutable -una vez en la memoria de la computadora- se divide en varias
+secciones o segmentos: texto, datos, montón (o montículo) y pila.
 <div class=image id=img_01_01 style="width:80%; margin-left:10%">
 	<img src=imagenes/01_01_ejecutable.png
 	     alt="Secciones de un ejecutable: pila,
@@ -48,7 +49,8 @@ código.
 A continuación, la sección de datos almacena los valores globales:
 constantes y variables, inicializadas o no; en la literatura, este segmento,
 podéis encontrarlo dividido en DATA (o CONST) y BSS -Block Starting Symbol-,
-según estén inicializadas o no. La sección de montón se utiliza
+según estén, respectivamente, inicializadas o no. La sección de montón se
+utiliza
 para asignar memoria dinámicamente, conforme la necesita el programa: cuando
 se solicita memoria al sistema para una estructura de datos o se crea un
 objeto. El espacio libre permite, como acabamos de indicar, que el montón
@@ -102,15 +104,18 @@ se utiliza preferentemente una técnica diferente denominada
 					<h1 id=proceso>¿Qué es un proceso?</h1>
 				</header>
 				<p>
-Un proceso es en esencia un programa en ejecución. Cada proceso tiene
+Un proceso es, en esencia, un programa en ejecución. Cada proceso tiene
 asociado un espacio de direcciones, una lista de ubicaciones de memoria
 que va desde algún mínimo -generalmente cero- hasta cierto valor máximo, donde
-el proceso puede leer y escribir información. <span class=cita>[...] Un
+el proceso puede leer y escribir información.
+<p class=cita style="width:80%;margin-left:10%">Un
 proceso es un recipiente que guarda toda la información necesaria para
-ejecutar un programa. [...] <span class=autor>Tanenbaum</span></span>.
-Para mantener los distintos programas que se ejecutan en el sistema, el S.O.
+ejecutar un programa.
+<br><span class=autor>Tanenbaum</span>
+<p>Para mantener los distintos programas que se ejecutan en el sistema, el S.O.
 mantiene una tabla de procesos, un vector con una entrada por proceso
-denominada PCB (Process Control Block – bloque de control del proceso),
+denominada <b>PCB</b> (<b><i>Process Control Block</i></b> – bloque de control
+del proceso),
 que contiene la información relevante acerca del proceso: contador de
 programa, apuntador de pila… y datos propios de identificación para el S.O.
 como un identificador numérico, el identificador del proceso padre, ficheros abiertos,
@@ -143,7 +148,7 @@ operativo. Generalmente, se crean varios procesos: algunos de ellos se
 denominan de <em>segundo plano</em>, es decir, que no están asociados a un
 usuario específico (no interactúan con él/ella) sino con una función
 específica. Estos procesos en segundo plano, en general, se conocen como
-demonios (daemons), existiendo docenas de los mismos en los sistemas
+demonios (<i>daemons</i>), existiendo docenas de los mismos en los sistemas
 operativos modernos.
 <p>Los sistemas modernos, normalmente, utilizan la arquitectura
 cliente-servidor, un modelo de diseño de software que divide la gestión
@@ -246,8 +251,8 @@ ha quedado invalidada,
 tanto al entrar en modo núcleo como para el nuevo proceso, por lo que debe
 cargarse de la memoria principal en dos ocasiones.
 <p>Podemos dividir los algoritmos de planificación en dos categorías: no
-apropiativos (nonpreemptive) y apropiativos. Los primeros permiten que los
-procesos se ejecutan hasta que se bloquean o hasta que liberan la CPU de
+apropiativos (<i>nonpreemptivei</i>) y apropiativos. Los primeros permiten que
+los procesos se ejecutan hasta que se bloquean o hasta que liberan la CPU de
 forma voluntaria, no existiendo un algoritmo de planificación propiamente
 dicho. En el caso de los segundos, si no se produce una de las acciones antes
 comentadas, el planificador toma el control tras un período de tiempo
@@ -342,8 +347,9 @@ pero comunicadas.
 <aside>
 Toda la información aquí mostrada está basada en la 
 <a href=https://docs.oracle.com/javase/specs/jvms/se14/html/index.html>especificación de la JVM</a>, más concretamente, en los puntos 1.1, 1.2 y 2.5. La
-introducción a los parámetros de la aplicación <em>java</em>, en su página
-de manual.
+introducción a los parámetros de la aplicación <em>java</em>, en su
+<a href=https://docs.oracle.com/en/java/javase/14/docs/specs/man/java.html>
+página de manual</a>.
 </aside>
 <p>En un principio, la <i>Java platform</i> se desarrolló con la idea de
 proporcionar un entorno seguro de despliegue de componentes software, con
@@ -410,7 +416,70 @@ contiene también un <em><b>pc Register</b></em>, contador de programa, que es
 propio de cada hilo y contiene la dirección de la instrucción de la JVM que
 está en ejecución.
 
-<h3>Parámetros de la JVM</h>
+<h3>Parámetros de la JVM</h3>
+<p>La JVM se activa utilizando el comando <em>java</em> (o <em>javaw</em>),
+seguido del programa a ejecutar, el que contiene la clase con el método
+<span class=metodo>main</span>(). El <a href=/anexos/01_anexo>Anexo I</a>
+explica cómo se puede ejecutar un programa en Java.
+<p>Entre el comando y el programa a ejecutar podemos especificar opciones que
+determinarán cómo se ejecuta. De esas opciones, las que nos interesan son las
+que van a determinar la cantidad de memoria que la JVM utilizará. Estas
+opciones se encuentran entre las denominadas
+<a href=https://docs.oracle.com/en/java/javase/14/docs/specs/man/java.html#extra-options-for-java>Opciones extra</a>
+y, de las mismas, las que hacen referencia a los tamaños de pila y montón.
+<p>Las opciones que decimos empiezan por <em>-X</em> y son específicas de la
+implementación, por lo que no se garantiza que una JVM, diferente a la de
+Oracle, las utilice. Existen también opciones avanzadas, que comienzan por
+<em>-XX</em>, que contemplan estos controles y más.
+<p>Contamos con tres opciones para la gestión del montón (-Xmn, -Xms y -Xmx) y
+una para la de la pila (-Xss). Todas ellas van seguidas del tamaño en octetos,
+aunque podemos especificarlas en <i>kilobytes</i> (con el sufijo <em>k</em> o
+<em>K</em>), <i>megabytes</i> (<em>m</em> o <em>M</em>) o <i>gigabytes</i>
+(<em>g</em> o <em>G</em>). Por ejemplo, un tamaño de 4MB puede indicarse como:
+<br><span class=code>-Xmx4m</span>
+<br><span class=code>-Xmx4096k</span>
+<br><span class=code>-Xmx4194304</span>
+<p>La opción <em>-Xmx</em> determina el tamaño máximo, que debe ser múltiplo
+de 1024 y mayor que 2MB; el tamaño por defecto se elige en tiempo de
+ejecución, según la configuración del sistema. <em>-Xms</em> determina el
+tamaño mínimo e inicial, que debe ser múltiplo de 1024 y mayor que 1MB. Pero,
+¿por qué querríamos cambiar estos valores? La JVM se ajusta bien a la mayoría
+de programas pero si necesitamos tener muchos objetos o muy grandes, puede
+interesarnos adaptarla a nuestras necesidades.
+<p>Por último, <em>-Xmn</em> indica el tamaño inicial y máximo del montón
+para la generación 0 del recolector de basura. Si no sabes cómo funciona un
+recolector de basura generacional, intento aquí explicar la idea básica de
+forma simple: utiliza varios espacios para almacenar los objetos; por defecto,
+se crean en este (generación 0) y, cuando el espacio se ha llenado, los
+objetos aún en uso se trasladan al siguiente espacio (generación 1) y el resto
+se eliminan. Este algoritmo se utiliza en todos los espacios. La recomendación
+es que el tamaño de este espacio esté entre el 25% y el 50% del tamaño total
+del montón.
+<p>El tamaño de la pila es establecido con <em>-Xss</em>. El tamaño es el que
+se asigna a cada hilo. El valor por defecto es 1MB en los sistemas tipo UNIX,
+dependiendo de la memoria virtual en Windows.
+
+<h2>Ejercicios</h2>
+<p>Crea un programa Java que sea capaz de contener una esctructura con mil
+millones de elementos. Los elementos serán números reales en doble precisión
+a los que asignarás un valor aleatorio, de uno en uno.
+<ol>
+	<li>Usa un vector de <em>double</em>. ¿Has tenido algún problema?
+	Si lo has tenido, ¿has podido solucionarlo? ¿Cómo?
+<br>Nota: si el ordenador en que realizas la prueba tiene menos de 16GB
+es posible que tarde mucho tiempo: imprime un mensaje justo antes de que
+comience a asignar valores a los elementos del vector y, cuando lo veas
+impreso en la consola, puedes detener el programa.
+	<li>Utiliza ahora una colección como, por ejemplo, un
+		<a class=clase target=_blank
+		   href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/ArrayList.html#%3Cinit%3E()>ArrayList</a>.
+	   ¿Ha habido algún problema? Si así hubiera sido, ¿a qué crees que
+	   es debido?
+<br>Nota: para supervisar la tarea, imprime un mensaje, por ejemplo, cada vez
+que hayas asignado valor y añadido al <span class=clase>ArrayList</span>
+1000 elementos.
+
+</ol>
 			</section>
 			<footer>
 <nav class=pie>
