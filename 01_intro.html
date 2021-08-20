@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-03-19">
-		<meta name=modified content="2021-08-19">
+		<meta name=modified content="2021-08-20">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -120,7 +120,7 @@ que contiene la información relevante acerca del proceso: contador de
 programa, apuntador de pila… y datos propios de identificación para el S.O.
 como un identificador numérico, el identificador del proceso padre, ficheros abiertos,
 datos estadísticos, etc.
-<p>Un proceso puede crearse en el arranque del sistema o, porque desde otro
+<p>Un proceso puede crearse en el arranque del sistema o porque, desde otro
 proceso, se solicita al S.O. que lo cree. Vamos a considerar solo la segunda
 opción. Para crear el proceso (hijo), el que ya está en ejecución (proceso
 padre) realiza una llamada al sistema (invoca una función del S.O.) para
@@ -228,9 +228,30 @@ debía pasar al estado "listo".
 
 			</section>
 
-			<section id=Planificacion>
-				<header id=planificacion>
+<p>Podemos dividir los algoritmos de planificación en dos categorías: no
+apropiativos (<i>nonpreemptive</i>) y apropiativos. Los primeros permiten que
+los procesos se ejecuten hasta que se bloquean o hasta que liberan la CPU de
+forma voluntaria, no existiendo un algoritmo de planificación propiamente
+dicho. En el caso de los segundos, si no se produce una de las acciones antes
+comentadas, el planificador toma el control tras un período de tiempo
+determinado y selecciona otro proceso (de aquellos en estado "listo").
+<p>Se han propuesto múltiples métodos de planificación aunque no vamos a
+tratarlos aquí. Para más información, se puede visitar la página de Wikipedia
+(en inglés) sobre
+<a target=_blank href=https://en.wikipedia.org/wiki/Scheduling_(computing)>
+planificación</a>.
+
+
+			<section id=Hilos>
+				<header>
+					<h1 id=hilos>Hilos</h1>
 				</header>
+<p>Tradicionalmente, cada proceso hace una única cosa. A veces, sin embargo,
+la misma aplicación debe realizar varias actividades a la vez, algunas de las
+cuales pueden bloquearse en un momento dado. En esas ocasiones puede
+interesarnos tener varios flujos de control diferentes, todos en el mismo
+programa. Pero… ese era el propósito de tener procesos, ¿para qué podríamos
+querer tener (sub)procesos dentro de un proceso?
 <p>En los primeros sistemas, que tenían un procesamiento por lotes, el
 algoritmo de planificación era muy sencillo: se ejecutaba el siguiente
 trabajo a realizar. En los sistemas multiprogramados, sin embargo, esto
@@ -250,31 +271,6 @@ programa. Y sin olvidar que toda la
 ha quedado invalidada,
 tanto al entrar en modo núcleo como para el nuevo proceso, por lo que debe
 cargarse de la memoria principal en dos ocasiones.
-<p>Podemos dividir los algoritmos de planificación en dos categorías: no
-apropiativos (<i>nonpreemptivei</i>) y apropiativos. Los primeros permiten que
-los procesos se ejecutan hasta que se bloquean o hasta que liberan la CPU de
-forma voluntaria, no existiendo un algoritmo de planificación propiamente
-dicho. En el caso de los segundos, si no se produce una de las acciones antes
-comentadas, el planificador toma el control tras un período de tiempo
-determinado y selecciona otro proceso (de aquellos en estado "listo").
-<p>Se han propuesto múltiples métodos de planificación aunque no vamos a
-tratarlos aquí. Para más información, se puede visitar la página de Wikipedia
-(en inglés) sobre
-<a target=_blank href=https://en.wikipedia.org/wiki/Scheduling_(computing)>
-planificación</a>.
-
-			</section>
-
-			<section id=Hilos>
-				<header>
-					<h1 id=hilos>Hilos</h1>
-				</header>
-<p>Tradicionalmente, cada proceso hace una única cosa. A veces, sin embargo,
-la misma aplicación debe realizar varias actividades a la vez, algunas de las
-cuales pueden bloquearse en un momento dado. En esas ocasiones puede
-interesarnos tener varios flujos de control diferentes, todos en el mismo
-programa. Pero… ese era el propósito de tener procesos, ¿para qué podríamos
-querer tener (sub)procesos dentro de un proceso?
 <p>Nuestro interés reside en que estos miniprocesos o <b>hilos</b>
 (<em>threads</em>)
 tienen la habilidad de utilizar un espacio de direcciones compartido, con
@@ -378,7 +374,7 @@ programas tendrán que estar organizados en la memoria como en una máquina
 real o de modo similar. De hecho, el modelo no difiere mucho del de la
 segmentación que veíamos al principio.
 <p>En nuestro modelo empezábamos por la sección de texto. En la JVM esto es
-denominado <em><b>Method Area</b></em>. Contiene el código de la clases que,
+denominado <em><b>Method Area</b></em>. Contiene el código de las clases que,
 dependiendo de la implementación, puede ser de tamaño fijo o variable; es
 decir, que, en caso de ser variable, puede crecer o disminuir según se
 requiera. Tanto ésta como el resto de áreas que vamos a describir, en caso de
@@ -402,7 +398,7 @@ automático, denominado <b>recolector de basura</b> (<i>garbage collector</i>).
 La JVM no especifica cómo debe ser dicho gestor y deja al implementador elegir
 la técnica a utilizar.
 <p>Y finalizamos con la pila: <em><b>Java Virtual Machine Stack</b></em>. A
-diferencia del resto de áreas, que son comunes para todos el programa, la pila
+diferencia del resto de áreas, que son comunes para todo el programa, la pila
 es exclusiva, y privada, de cada hilo; es decir, que habrá tantas pilas como
 hilos, creándose a la vez que éstos. Almacena las variables locales y la
 información necesaria para la invocación de métodos y su retorno. Como antes,
@@ -428,8 +424,8 @@ opciones se encuentran entre las denominadas
 <a href=https://docs.oracle.com/en/java/javase/14/docs/specs/man/java.html#extra-options-for-java>Opciones extra</a>
 y, de las mismas, las que hacen referencia a los tamaños de pila y montón.
 <p>Las opciones que decimos empiezan por <em>-X</em> y son específicas de la
-implementación, por lo que no se garantiza que una JVM, diferente a la de
-Oracle, las utilice. Existen también opciones avanzadas, que comienzan por
+implementación, por lo que no se garantiza que una JVM diferente a la de
+Oracle las utilice. Existen también opciones avanzadas, que comienzan por
 <em>-XX</em>, que contemplan estos controles y más.
 <p>Contamos con tres opciones para la gestión del montón (-Xmn, -Xms y -Xmx) y
 una para la de la pila (-Xss). Todas ellas van seguidas del tamaño en octetos,
@@ -444,25 +440,25 @@ de 1024 y mayor que 2MB; el tamaño por defecto se elige en tiempo de
 ejecución, según la configuración del sistema. <em>-Xms</em> determina el
 tamaño mínimo e inicial, que debe ser múltiplo de 1024 y mayor que 1MB. Pero,
 ¿por qué querríamos cambiar estos valores? La JVM se ajusta bien a la mayoría
-de programas pero si necesitamos tener muchos objetos o muy grandes, puede
-interesarnos adaptarla a nuestras necesidades.
+de programas pero si necesitamos tener muchos objetos o algunos muy grandes,
+puede interesarnos adaptarla a nuestras necesidades.
 <p>Por último, <em>-Xmn</em> indica el tamaño inicial y máximo del montón
-para la generación 0 del recolector de basura. Si no sabes cómo funciona un
-recolector de basura generacional, intento aquí explicar la idea básica de
-forma simple: utiliza varios espacios para almacenar los objetos; por defecto,
-se crean en este (generación 0) y, cuando el espacio se ha llenado, los
-objetos aún en uso se trasladan al siguiente espacio (generación 1) y el resto
-se eliminan. Este algoritmo se utiliza en todos los espacios. La recomendación
-es que el tamaño de este espacio esté entre el 25% y el 50% del tamaño total
-del montón.
+para la generación 0 del recolector de basura. Como puedes imaginar, utiliza
+un recolector de basura generacional; vamos a ver cuál es la idea básica de
+forma simple: dispone secciones para almacenar los objetos; por defecto,
+se crean en esta (generación 0) y, cuando el espacio se ha llenado, los
+objetos aún en uso se trasladan a la siguiente sección (generación 1) y el
+resto se eliminan. En todos las secciones se utiliza este algoritmo. La
+recomendación es que el tamaño de la generación 0 esté entre el 25% y el 50%
+del tamaño total del montón.
 <p>El tamaño de la pila es establecido con <em>-Xss</em>. El tamaño es el que
 se asigna a cada hilo. El valor por defecto es 1MB en los sistemas tipo UNIX,
-dependiendo de la memoria virtual en Windows.
+pero en Windows depende de la memoria virtual.
 
 <h2>Ejercicios</h2>
-<p>Crea un programa Java que sea capaz de contener una esctructura con mil
-millones de elementos. Los elementos serán números reales en doble precisión
-a los que asignarás un valor aleatorio, de uno en uno.
+<p>Crea un programa Java que sea capaz de contener una estructura con mil
+millones de elementos. Los elementos serán números reales, en doble
+precisión, a los que asignarás un valor aleatorio, de uno en uno.
 <ol>
 	<li>Usa un vector de <em>double</em>. ¿Has tenido algún problema?
 	Si lo has tenido, ¿has podido solucionarlo? ¿Cómo?
