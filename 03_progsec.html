@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-06-11">
-		<meta name=modified content="2021-08-18">
+		<meta name=modified content="2021-08-21">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -467,11 +467,11 @@ constructores de la clase <span class=clase>Throwable</span>, con y sin
 mensaje, un par de métodos más suelen ser muy útiles:
 <dl>
 	<dt>
-<a class=metodo
-	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Throwable.html#getMessage()>getMessage()</a></dt>
+<a class=metodo target=_blank
+	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Throwable.html#getMessage()>getMessage</a>()</dt>
 	<dd></dd>
-<a class=metodo
-	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Throwable.html#toString()>toString</a></dt>
+<a class=metodo target=_blank
+	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Throwable.html#toString()>toString</a>()</dt>
 	<dd></dd>
 </dl>
 
@@ -529,8 +529,78 @@ especificar.
 <p style="font-size:1.2em">Para una mejor legibilidad del código, añadiremos
 <b>siempre</b> el sufijo <b>Exception</b> a las excepciones que creemos
 nosotros y a las subclases de éstas.
+
+<h2>Excepciones encadenadas</h2>
+<p>Existen ocasiones en que las que un programas, ante una excepción, puede
+responder generando una nueva excepción. Si este caso se produce, la
+información correspondiente a la excepción que ha causado ésta se pierde. Sin
+embargo, puede resultar de gran interés saber cuándo una excepción ha sido la
+causante de otra. Java nos proporciona las excepciones encadenadas para ello.
+<p>En primer lugar, el constructor de <span class=clase>Throwable</span>, del
+que hereda <span class=clase>Exception</span>, tiene dos firmas en las que
+resulta posible indicar la causa de la excepción:
+<dl>
+        <dt>
+<a class=metodo target=_blank
+   href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Throwable.html#%3Cinit%3E(java.lang.String,java.lang.Throwable)>Exception</a> ( String message, Throwable cause )</dt>
+        <dd></dd>
+<a class=metodo target=_blank
+        href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Throwable.html#%3Cinit%3E(java.lang.String)>Exception</a> ( Throwable cause )</dt>
+        <dd></dd>
+</dl>
+<p>Existe también un método <a class=metodo target=_blank
+       href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Throwable.html#initCause(java.lang.Throwable)>initCause</a>()
+utilizado cuando no existía soporte en el constructor. Solo puede ser invocado
+en una ocasión y se ha utilizado uno de los constructores anteriores, no puede
+ser invocado, generando una excepción <a class=clase target=_blank
+href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/IllegalStateException.html>IllegalStateException</a>.
+<p>Finalmente, si necesitamos conocer la excepción que provocó que se lanzara
+aquella que estamos analizando en este momento, el método <a class=metodo
+     target=_blank
+     href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/Throwable.html#getCause()>getCause</a>()
+nos la proporcionará o <em>null</em> si no existe causa o es desconocida.
+<pre class=code>
+try {
+	// código
+} catch ( FileNotFoundException cause ) {
+	// tratamiento
+	throw new FileNotAvailableException(cause);
+} catch ( AccessDeniedException cause ) {
+	// tratamiento
+	throw new FileNotAvailableException(cause);
+}
+...
+try {
+	// código que invoca al anterior
+} catch ( FileNotAvailableException e ) {
+	// tratamiento previo a la causa
+	if ( e.getCause() instanceof AccessDeniedException) {
+		// otro tratamiento
+	}
+}
+</pre>
+
+<h2>Consideraciones</h2>
+<dl>
+	<dt>No usar excepciones para el flujo de control</dt>
+	<dd></dd>
+	<dt>Las excepciones son excepcionales</dt>
+	<dd></dd>
+	<dt>No lanzar ni capturar excepciones genéricas</dt>
+	<dd></dd>
+	<dt>No usar cláusulas catch vacías</dt>
+	<dd></dd>
+	<dt>Usar diferentes bloques try para sentencias que lanzan las mismas
+	excepciones</dt>
+	<dd></dd>
+	<dt>Utilizar excepciones estándar</dt>
+	<dd></dd>
+	<dt>Utilizar excepciones cuando el constructor falla</dt>
+	<dd></dd>
+	<dt>Documentar las excepciones</dt>
+	<dd></dd>
+</dl>
 			</section>
-			<a href=https://docs.oracle.com/javase/tutorial/essential/exceptions/index.html>Manual</a>
 			<footer>
 <nav class=pie>
         <a class=previo href=02_multip.html>Programación multiproceso</a>
