@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-06-11">
-		<meta name=modified content="2021-08-21">
+		<meta name=modified content="2021-08-22">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -326,7 +326,8 @@ no puede existir.
 <p>Si bien las excepciones que no necesitan ser comprobadas tampoco necesitan
 ser declaradas, el resto sí. Bien sea porque el método genera la excepción,
 bien porque invoca a otro método que la genera y éste no la trata, debe
-especificar que puede lanzar la excepción.
+especificar que puede lanzar la excepción. Dicho de otro modo, el método que
+eleva la excepción y todos los que lo invocan, sin tratarla, deben declararlo.
 <p>Para indicar que un método puede (re)lanzar una o más excepciones debemos
 añadir la <em>cláusula throws</em> a la firma del método:
 <pre class=code>
@@ -583,22 +584,30 @@ try {
 <h2>Consideraciones</h2>
 <dl>
 	<dt>No usar excepciones para el flujo de control</dt>
-	<dd></dd>
+	<dd>La técnica intenta separar claramente la ejecución del código
+	normal del control del error.</dd>
 	<dt>Las excepciones son excepcionales</dt>
-	<dd></dd>
+	<dd>Se refiere a que sucede con poca frecuencia, cuando algún dato
+	se encuentra fuera de su dominio, por ejemplo, y se produce el
+	error.</dd>
 	<dt>No lanzar ni capturar excepciones genéricas</dt>
-	<dd></dd>
+	<dd>Cuanto más concretamente podamos determinar la causa del error,
+	más apropiada será el control del mismo.</dd>
 	<dt>No usar cláusulas catch vacías</dt>
-	<dd></dd>
+	<dd>Si no es posible solucionarlo, es mejor propagarlo.</dd>
 	<dt>Usar diferentes bloques try para sentencias que lanzan las mismas
 	excepciones</dt>
-	<dd></dd>
+	<dd>Ello permite definir mejor cuál es el origen del error.</dd>
 	<dt>Utilizar excepciones estándar</dt>
-	<dd></dd>
+	<dd>La bilbioteca de Java define excepciones para la mayoría de los
+	errores que pueden producirse</dd>
 	<dt>Utilizar excepciones cuando el constructor falla</dt>
-	<dd></dd>
+	<dd>Si el objeto no puede crearse es imposible trabajar con el
+	mismo</dd>
 	<dt>Documentar las excepciones</dt>
-	<dd></dd>
+	<dd>Siempre añadir la información pertinente en la documentación del
+	método que la lance. Y si es una excepción de usuario, explicar
+	claramente su cometido.</dd>
 </dl>
 			</section>
 			<footer>
