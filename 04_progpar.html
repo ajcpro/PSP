@@ -1130,7 +1130,7 @@ que tiene acceso a las variables declaradas en los bloques que engloban a la
 función lambda. Sin embargo, no puede modificar sus valores: puede utilizarse
 una variable local que sea una referncia.
 
-<h2>Interfaz funcional</h2>
+<h3>Interfaz funcional</h3>
 <p>Las funciones lambda no están pensadas para ejecutarse por sí mismas: se
 utilizan para implementar un método definido por un interfaz funcional. Un
 <b>interfaz funcional</b> es aquél que contiene un método abstracto y solo
@@ -1175,6 +1175,54 @@ miNumero = () -> "Error de tipo";
 </pre>
 <p>También sería un error si la expresión lambda tomara parámetros.
 
+<h3>Referencia a método</h3>
+<p>Cuando se utiliza una función lambda para invocar un método ya existente,
+resulta más simple invocar directamente a dicho método, sin necesidad de
+crear la función lambda. La forma de hacerlo es mediante la utilización del
+operador <em>::</em> (dos puntos seguido de dos puntos). Pero cuidado, la
+referencia a método es una expresión lambda, no puede utilizarse con
+cualquier método.
+<p>Supongamos la clase de ejemplo:
+<pre class=code>
+class MiClase {
+	static int metodoEstatico ( parametrosFormales ) {
+		// Cuerpo del método
+	}
+}
+</pre>
+<p>En lugar de escribir la función lambda:
+<br><span class=code>( parametrosActuales ) -> MiClase.metodoEstatico(parametrosActuales)</span>
+<br>los métodos estáticos de clase se transforman en la siguiente referencia
+a método:
+<br><span class=code>MiClase::metodoEstatico</span>
+<p>Los métodos de instancia hacen referencia a un objeto conocido, del mismo
+modo que cuando se utiliza con la clase. La diferencia en este caso es que
+invocamos al método no estático, desde el identificador del objeto.
+<p>Las referencias a métodos de instancia de un objeto particular son aquellas
+en los que vamos a aplicar nuestra función lambda a varios objetos del mismo
+tipo o clase. Si suponemos que tenemos un objeto del tipo ClaseDelObjeto, la
+expresión:
+<br><span class=code>( objeto, parametrosActuales ) -> objeto.metodo(parametrosActuales)</span>
+<br>puede ser reemplazada por:
+<br><span class=code>ClaseDelObjeto::metodo</span>
+<p>Un ejemplo simple es el que aparece en la <a target=_blank
+href=https://docs.oracle.com/javase/tutorial/java/javaOO/methodreferences.html>documentación</a> de Java:
+<pre class=code>
+String[] stringArray = { "Barbara", "James", "Mary", "John", "Patricia", "Robert", "Michael", "Linda" };
+Arrays.sort(stringArray, String::compareToIgnoreCase);
+</pre>
+<p>La referencia al constructor es muy similar a la referencia a un método
+estático, con la diferencia de que el nombre del método es <em>new</em>. Lo
+que hace esta función lambda es crear un nuevo objeto y referenciar a un
+constructor de la clase.
+
+<aside>
+Si quieres saber más sobre las funciones lambda, además del tutorial de Java,
+puedes visitar la página <a target=_blank
+href=http://www.lambdafaq.org/>Maurice Naftalin's Lambda FAQ</a>.
+</aside>
+
+<h2>Streams</h2>
 			</section>
 			<footer>
 <nav class=pie>
