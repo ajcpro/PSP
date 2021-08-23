@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-06-14">
-		<meta name=modified content="2021-08-12">
+		<meta name=modified content="2021-08-23">
 		<link rel=stylesheet href="estilo.css">
 
 <!--
@@ -1094,6 +1094,87 @@ paralelizarlo, realizaremos la suma de forma secuencial.
 				<header>
 					<h1 id=streams>Streams en Java</h1>
 				</header>
+
+<h2>Función Lambda</h2>
+<p>Las funciones lambda, también denominadas
+<a href=https://es.wikipedia.org/wiki/Expresi%C3%B3n_lambda>expresiones lambda</a>
+o función anónima, son funciones que se definen pero no se les asigna un
+nombre porque se utilizan solo una vez o un número de veces limitado. Tienen
+múltiples usos, dependiendo del lenguaje de programación y la forma de
+implementación de las mismas, aunque podríamos destacar, como los más
+comunes, la generación de funciones patrón o la utilización como parámetros
+de otras funciones como, por ejemplo, las de ordenación: el método de
+ordenación es desconocido hasta la invocación de la función, pudiendo
+generar esa función en el parámetro actual, como función anónima.
+<p>Su <a href=https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html#syntax>sintaxis</a>
+en <a href=https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html>Java</a>
+es sencilla: se indica la lista de parámetros, separados por comas, entre
+paréntesis, seguidos del símbolo de la flecha (el guión y el símbolo de
+mayor que, en ese orden), finalizando con el cuerpo de la función. Resulta
+posible suprimir los paréntesis si solo hay un parámetro (o poner solo los
+paréntesis si no los hay) y no es necesario indicar el tipo de datos de los
+argumentos, ya que el compilador puede inferirlos por el contexto. El cuerpo
+de la función puede ser una expresión simple, devolviendo el resultado de
+evaluar dicha expresión –que puede ser de tipo void y no devolver nada-, o
+puede ser como el cuerpo de cualquier otro método: encerrando en un bloque
+(entre llaves) con las instrucciones separadas por puntos y comas; si queremos
+que devuelva un valor, deberemos utilizar return.
+<p>En
+<a href=https://es.wikipedia.org/wiki/Expresi%C3%B3n_lambda#Java>Wikipedia</a>
+podéis encontrar una serie de ejemplos de funciones lambda. El último ejemplo
+del primer bloque, el de
+<span class=code style="margin-left:0">(id, defaultPrice)</span>, contiene
+expresiones asociadas a un <em>stream</em>, objeto de esta sección. Es
+importante tener en cuenta que puede declarar variables locales pero también
+que tiene acceso a las variables declaradas en los bloques que engloban a la
+función lambda. Sin embargo, no puede modificar sus valores: puede utilizarse
+una variable local que sea una referncia.
+
+<h2>Interfaz funcional</h2>
+<p>Las funciones lambda no están pensadas para ejecutarse por sí mismas: se
+utilizan para implementar un método definido por un interfaz funcional. Un
+<b>interfaz funcional</b> es aquél que contiene un método abstracto y solo
+uno. Eso significa que representa una única acción.
+<p>El interfaz funcional define el objetivo de la función lambda; a veces, es
+denominado SAM (Single Abstract Method).
+<p>Aquí podemos ver un ejemplo de interfaz funcional:
+<pre class=code>
+interface miNumero {
+	double elNumero();
+}
+</pre>
+<p>El método <span class=metodo>elNumero</span>() es abstracto de forma
+implícita y es el único método de <span class=clase>miNumero</span>: es un
+interfaz funcional.
+<p>Como ya hemos comentado, las funciones lambda no están pensadas para
+ejecutarse por sí mismas, sino que constituyen la implementación del método
+abstracto definido por el interfaz funcional. Veamos cómo podemos utilizar la
+expresión lambda para asignar contexto a una referencia al interfaz funcional.
+Creamos un objeto del tipo del interfaz y le asignamos una función lambda:
+<pre class=code>
+miNumero numero;
+miNumero = () -> 1.23;
+</pre>
+<p>¿Qué sucede ahora si utilizamos el objeto o, más propiamente, su
+<em>método abstracto único</em>?
+<pre class=code>
+System.out.println("Número fijo: " + numero.elNumero());
+</pre>
+<p>Ese código imprimirá <em>1.23</em>.
+<p>Podemos también, por ejemplo, asignar una función diferente al método:
+<pre class=code>
+miNumero = () -> Math.random() * 50;
+System.out.println("Núm. aleat.: " + numero.elNumero());
+System.out.println("Otro aleat.: " + numero.elNumero());
+</pre>
+<p>Pero, si la función lambda devolviera una cadena de texto, generaría un
+error de tipo porque el método abstracto devuelve un número en punto
+flotante de doble longitud.
+<pre class=code>
+miNumero = () -> "Error de tipo";
+</pre>
+<p>También sería un error si la expresión lambda tomara parámetros.
+
 			</section>
 			<footer>
 <nav class=pie>
