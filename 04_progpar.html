@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-06-14">
-		<meta name=modified content="2021-08-23">
+		<meta name=modified content="2021-08-25">
 		<link rel=stylesheet href="estilo.css">
 
 <!--
@@ -1160,7 +1160,7 @@ miNumero = () -> 1.23;
 <pre class=code>
 System.out.println("Número fijo: " + numero.elNumero());
 </pre>
-<p>Ese código imprimirá <em>1.23</em>.
+<p>Ese código imprimirá <em>Número fijo: 1.23</em>.
 <p>Podemos también, por ejemplo, asignar una función diferente al método:
 <pre class=code>
 miNumero = () -> Math.random() * 50;
@@ -1228,8 +1228,8 @@ href=http://www.lambdafaq.org/>Maurice Naftalin's Lambda FAQ</a>.
 de Java (no los <em>Java IO Streams</em>) representan una forma de trabajar
 con colecciones de datos masivos, mediante funciones de <a target=_blank
 	href=https://docs.oracle.com/javase/tutorial/collections/streams/reduction.html>agregación y reducción</a>.
-Un stream, es una secuencia de elementos, objetos, que se introducen en un
-<em><b>pipeline</b></em>: una secuencia de funciones u operaciones. A
+Un <em>stream</em> es una secuencia de elementos, objetos, que se introducen
+en un <em><b>pipeline</b></em>: una secuencia de funciones u operaciones. A
 diferencia de la colección, el <a class=clase target=_blank
 	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/stream/Stream.html>stream</a>
 no almacena datos, solo los transporta de una operación a otra del pipeline.
