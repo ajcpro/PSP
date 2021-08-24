@@ -1106,7 +1106,7 @@ comunes, la generación de funciones patrón o la utilización como parámetros
 de otras funciones como, por ejemplo, las de ordenación: el método de
 ordenación es desconocido hasta la invocación de la función, pudiendo
 generar esa función en el parámetro actual, como función anónima.
-<p>Su <a href=https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html#syntax>sintaxis</a>
+<p>Su <a href=https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.27>sintaxis</a>
 en <a href=https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html>Java</a>
 es sencilla: se indica la lista de parámetros, separados por comas, entre
 paréntesis, seguidos del símbolo de la flecha (el guión y el símbolo de
@@ -1205,8 +1205,8 @@ expresión:
 <br><span class=code>( objeto, parametrosActuales ) -> objeto.metodo(parametrosActuales)</span>
 <br>puede ser reemplazada por:
 <br><span class=code>ClaseDelObjeto::metodo</span>
-<p>Un ejemplo simple es el que aparece en la <a target=_blank
-href=https://docs.oracle.com/javase/tutorial/java/javaOO/methodreferences.html>documentación</a> de Java:
+<p>Un ejemplo simple es el que aparece en el <a target=_blank
+href=https://docs.oracle.com/javase/tutorial/java/javaOO/methodreferences.html>tutorial</a> de Java:
 <pre class=code>
 String[] stringArray = { "Barbara", "James", "Mary", "John", "Patricia", "Robert", "Michael", "Linda" };
 Arrays.sort(stringArray, String::compareToIgnoreCase);
@@ -1223,6 +1223,101 @@ href=http://www.lambdafaq.org/>Maurice Naftalin's Lambda FAQ</a>.
 </aside>
 
 <h2>Streams</h2>
+<p>Los <a class=clase target=_blank
+	  href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/stream/package-summary.html>Streams</a>
+de Java (no los <em>Java IO Streams</em>) representan una forma de trabajar
+con colecciones de datos masivos, mediante funciones de <a target=_blank
+	href=https://docs.oracle.com/javase/tutorial/collections/streams/reduction.html>agregación y reducción</a>.
+Un stream, es una secuencia de elementos, objetos, que se introducen en un
+<em><b>pipeline</b></em>: una secuencia de funciones u operaciones. A
+diferencia de la colección, el <a class=clase target=_blank
+	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/stream/Stream.html>stream</a>
+no almacena datos, solo los transporta de una operación a otra del pipeline.
+<p>Supongamos que tenemos una colección de elementos y queremos imprimirlos:
+podemos utilizar un bucle <em>for</em> para imprimir cada uno de los elementos
+dentro del bucle:
+<pre class=code>
+for ( p: coleccion )
+	System.out.println(p);
+</pre>
+<p>Pero usando <em>stream</em>, podemos crear dicho <em>stream</em> desde la
+colección y después, para cada elemento (<a class=metodo target=_blank
+	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/stream/Stream.html#forEach(java.util.function.Consumer)>forEach</a>())
+del <em>stream</em>, proporcionar una función lambda:
+<pre class=code>
+coleccion
+	.stream()
+	.forEach(System.out::println);
+</pre>
+<p>Un ejemplo más complicado puede ser aquél en el que queremos conocer la
+media aritmética del valor de algunos de los elementos de la colección.
+Empezaríamos recorriendo la colección y añadiendo los valores que cumplen la
+condición a una segunda colección; a continuación, recorreríamos esa segunda
+colección para ir sumando sus valores y, finalmente, calcularíamos la media
+como la suma de los valores dividido por el número de elementos de la segunda
+colección.
+<pre class=code>
+for ( p: coleccion )
+	if ( p.valido() )
+		validos.add(p);
+for ( v: validos )
+	suma += v.valor();
+media = suma / validos.size();
+</pre>
+<p>Se puede hacer de forma más elegante con <em>streams</em>. Como antes,
+crearemos el mismo desde la colección. Después, hacemos un filtrado:
+utilizamos la operación <a class=metodo target=_blank
+	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/stream/Stream.html#filter(java.util.function.Predicate)>filter</a>()
+para seleccionar un conjunto de elementos y, como método de filtrado,
+proporcionamos una función lambda: la función que verifica que el elemento
+cumple la condición. Llegados a este punto, el stream solo contiene aquellos
+elementos que cumplen la condición y necesitamos extraer el valor: hacemos una
+traslación (función <a class=metodo target=_blank
+	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/stream/Stream.html#map(java.util.function.Function)>map</a>())
+para asignar al <em>stream</em> los valores de los elementos, en lugar de los
+elementos de la colección. Utilizamos la función <a class=metodo target=_blank
+	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/stream/Stream.html#mapToInt(java.util.function.ToIntFunction)>
+	mapToInt</a>(),
+que devuelve un <em>stream</em> de enteros (<em>Integer</em>). Por último,
+para calcular la media aritmética, usamos la función
+<a class=metodo target=_blank
+   href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/stream/DoubleStream.html#average()>average</a>();
+el valor resultado es un número que podemos asignarlo a la variable:
+<pre class=code>
+media = colección
+	.stream()
+	.filter(Clase::valido)
+	.mapToInt(Clase::valor)
+	.average();
+</pre>
+<p>NOTA: la función <em>average</em> devuelve un valor opcional de tipo
+<em>real</em>, por lo que deberemos usar el método
+<a class=metodo target=_blank
+	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/OptionalDouble.html#getAsDouble()>getAsDouble</a>().
+<p>Resulta evidente cómo, entre las ventajas de los streams, no necesitamos
+iterar de forma explícita o crear colecciones intermedias.
+<p>Con los ejemplos que veíamos antes, a las funciones como <em>filter</em> se
+las denomina <b>funciones intermedias</b> porque producen un nuevo stream,
+mientras que las funciones como <em>forEach</em>, que no producen un stream,
+se denominan <b>funciones terminales</b>.
+<p>Un <em>pipeline</em> tiene que tener un origen: este puede ser un vector,
+una colección, una función generadora o un flujo de <i>ES</i>. También una
+serie de funciones intermedias, aunque puede no haber ninguna. Y, finalmente,
+una función terminal.
+<p>Funciones como <em>filter</em>, <em>mapToInt</em> o <em>average</em> son
+denominadas <b>funciones de agregación</b> porque aplican la función indicada
+a cada elemento del <em>stream</em>. Aunque pueden parecer iteradores, o que
+se comportan como ellos, hay diferencias fundamentales. Con un iterador, el
+programador determina sobre qué elementos opera y cómo opera; en los streams
+(el programador) determina sobre qué objetos iterar pero es Java la que
+determina cómo operar sobre ellos. Las funciones procesan elementos del
+stream, no de la colección, por lo que son denominadas <b>operaciones de
+<em>stream</em></b> (<em><b>stream operations</b></em>). Por último, la
+mayoría de las funciones de agregación reciben como parámetro una función,
+por lo que se puede adaptar el modo de trabajo de función a través de una
+expresión lambda.
+
+<h3>Paralelismo</h3>
 			</section>
 			<footer>
 <nav class=pie>
