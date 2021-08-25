@@ -31,6 +31,7 @@
 					<li><a href=#fjframework><em>Fork-Join Framework</em></a></li>
 					<li><a href=#amdhal>Ley de Amdhal</a></li>
 					<li><a href=#streams>Streams en Java</a></li>
+					<li><a href=#determinismo>Determinismo</a></li>
 
 				</ol> 
 			</nav>
@@ -645,7 +646,7 @@ S1 continúa a S3 (eje continuar); y S3 continúa a S4. Pero existe un
 S4. De este modo, con estos tres ejes, fork, join, y continuar, podemos
 modelar la ejecución de nuestro programa paralelo. Si no tuviéramos los nodos
 fork y join, nuestro grafo sería una línea secuencial con ejes continuar.
-<div class=image id=img_04_01>
+<div class=image id=img_04_01 style="margin-left:10%">
 	<img src=imagenes/04_01_grafo.png style="width: 15em"
 	     alt="Grafo computacional con ejes fork, join y continuar">
 	<p class=caption>Grafo computacional de las tareas
@@ -742,6 +743,14 @@ de dónde vienen los ejes o si son de uno u otro tipo. Pero podemos pensar en
 su rendimiento; imaginemos que todas las tareas tienen un coste 1, excepto S6,
 que tiene un coste 10. Estamos interesados en la idea del tiempo de ejecución
 <em>T</em> en <em>P</em> procesadores, <em>T<sub>P</sub></em>.
+<div class=image id=img_04_02 style="margin-left:10%">
+        <img src=imagenes/04_02_grafo2.png style="width: 15em"
+             alt="Grafo computacional de 7 tareas. El grafo se inicia con S1,
+	     que tiene arcos a S2, S4 y S6; S2 es seguido por S3; S4 lo es
+	     por S5; terminando S3, S5 y S6 en S7. Todos los nodos tienen
+	     coste 1, excepto S6, que tiene coste 10">
+        <p class=caption>Grafo computacional de las tareas
+</div>
 <p>Vamos a pensar cómo estas instrucciones del grafo computacional son
 planificadas en los procesadores. Supongamos que disponemos de una máquina
 con dos procesadores. El planificador hará que las instrucciones se repartan
@@ -1246,7 +1255,8 @@ colección y después, para cada elemento (<a class=metodo target=_blank
 del <em>stream</em>, proporcionar una función lambda:
 <pre class=code>
 coleccion
-	.stream()
+	.<a class=metodo target=_blank
+	    href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/Collection.html#stream()>stream</a>()
 	.forEach(System.out::println);
 </pre>
 <p>Un ejemplo más complicado puede ser aquél en el que queremos conocer la
@@ -1318,6 +1328,135 @@ por lo que se puede adaptar el modo de trabajo de función a través de una
 expresión lambda.
 
 <h3>Paralelismo</h3>
+<p>Y ahora viene la pregunta del millón: ¿qué tienen que ver los
+<em>streams</em>? ¿Cómo pueden ayudar al mismo?
+<p>Existe un modo muy elegante de convertir cualquier computación con
+<em>streams</em> desde su ejecución secuencial a paralelo. Y eso es porque
+Java puede ejecutar <em>streams</em> en paralelo: cuando lo hace así, divide
+el <em>stream</em> en múltiples <em>substreams</em>, itera y aplica las
+operaciones en parelelo y, al final, combina los resultados.
+<p>Cuando se crea un <em>stream</em> es siempre secuencial, salvo que se
+indique lo contrario. Para crear un <em>stream</em> paralelo, se puede hacer,
+desde una colección, invocando a <a class=metodo target=_blank
+	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/Collection.html#parallelStream()>parallelStream</a>(),
+en lugar de <span class=metodo>stream</span>(), o invocando
+<a class=metodo target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/stream/BaseStream.html#parallel()>parallel</a>()
+sobre el <em>stream</em> ya creado.
+<pre class=code>
+media = colección
+        .stream()
+	<span class=modificado>.parallel()</span>
+        .filter(Clase::valido)
+        .mapToInt(Clase::valor)
+        .average();
+</pre>
+<p>Con esa sencilla modificación que hemos introducido al ejemplo anterior, el
+cálculo de la media se realizará explotando las capacidades de paralelismo de
+la máquina en la que se esté ejecutando el programa Java.
+<aside>
+Resulta interesante la lectura del
+<a target=_blank href=https://docs.oracle.com/javase/tutorial/collections/streams/parallelism.html>tutorial</a>
+de Java acerca del paralelismo en <em>streams</em>.
+</aside>
+			</section>
+			<footer>
+			<section id=Deterinismo>
+				<header>
+					<h1 id=determinismo>Determinismo</h1>
+				</header>
+<p>El <b>determinismo funcional</b> es la propiedad de que para una misma
+entrada de una función, siempre obtendremos una misma salida. Esto es algo
+que esperamos para un programa cualquiera. ¿Qué sucede en el caso de la
+programación paralela?
+<p>Queremos que siga existiendo el determinismo funcional pero existe también
+el <b>determinismo estructural</b>: cada vez que ejecutamos un programa con
+una entrada, obtenemos el mismo grafo computacional, que hace referencia a la
+estructura del programa paralelo.
+<p>Lógicamente, nuestro interés se centra en programas que son,
+simultáneamente, funcionalmente deterministas y estructuralmente
+deterministas. Pero resulta posible crear programas paralelos que satisfacen
+solo una de estas propiedades o ninguna.
+<p>Recordemos nuestro programa para sumar los elementos de un vector y
+utilicemos un <span class=palabra>ASYNC</span> en la suma de los elementos de
+la parte izquierda pero no utilicemos <span class=palabra>FINISH</span>, como
+cuando lo introdujimos por primera vez:
+<br><span class=code><span class=palabra>ASYNC</span> suma_izq = suma de la parte izquierda</span>
+<br><span class=code>suma_dch = suma de la parte derecha</span>
+<br><span class=code>suma = suma_izq + suma_dch</span>.
+<br>Fácilmente podemos ver que hay un error al no incluir ese
+<span class=palabra>FINISH</span>. Eso significa que, tal vez, mientras la
+tarea asíncrona está haciendo la suma de los elementos de la izquierda, la
+tarea padre puede estar leyéndola en paralelo, para añadirla a la suma de los
+elementos de la derecha. Este es un error muy grave en la programación
+paralela, error conocido como <b>condición de carrera</b> (<b><i>race
+condition</i></b>), por la similitud que tiene con una carrera en la que los
+dos procesos compiten por llegar uno antes que el otro, de manera que el
+estado de salida dependa de ello.
+En este caso, se produce porque <em>suma_izq</em> es una variable
+compartida y, mientras la tarea asíncrona intenta escribir un dato en la
+misma, la tarea padre intenta leerlo, pudiendo suceder que el valor que una
+lee sea diferente del que la otra escribe. En textos en inglés podríais
+encontrarlo también como <b><i>data race</i></b>, cuando hace referencia a la
+inconsistencia (carrera) en los datos.
+<p>La condición de carrera se produce cuando tenemos una lectura y una
+escritura (<em>RW</em>) en paralelo o dos escrituras (<em>WW</em>). El
+problema, en el primer caso, es que el valor de la lectura depende de que la
+escritura se haya producido ya o no: ¿qué valor lees, el antiguo o el nuevo?
+En el caso de las dos escrituras, reside en que el valor final de la variable
+depende del orden en que éstas se hayan producido. Dos lecturas en paralelo
+no tienen problemas porque, se hagan en el orden en que se hagan, el valor es
+siempre el mismo.
+<p>La ausencia de condiciones de carrera implica determinismo tanto funcional
+como estructural. Construyamos el programa que construyamos, utilizando las
+herramientas que hemos visto, si no es determinista, es imposible que no
+contenga alguna condición de carrera. Con la ausencia de condiciones de
+carrera se garantiza que el programa es determinista.
+<p>Hemos indicado que la condición de carrera es un error y, desde luego, es
+algo a evitar. Sin embargo, existen casos en la programación paralela en los
+que puedes obtener diferentes salidas y todas ellas son aceptables. Imaginemos,
+por ejemplo, una búsqueda web: puedes obtener diferentes resultados, si la
+realizas varias veces, pero todos son aceptables ya que contienen los enlaces
+más populares, que es lo que estás buscando. Otro ejemplo puede ser el
+problema de las ocho reinas, en que nos interesa una solución, la que sea,
+aunque existan varias. A esto se lo denomina <b>no determinismo benigno</b>.
+<p>Vamos a ver un ejemplo en el que buscamos una cadena dentro de un texto.
+Empezamos haciendo un bucle que va a recorrer el texto (desde el principio
+hasta la longitud del mismo menos la de la cadena que buscamos). Para cada
+elemento del texto, creamos un centinela (<em>coincide</em>) que nos dirá si
+la cadena se encuentra en el texto o no, a partir de esa posición. Y
+comparamos con la cadena (en el bucle anidado). Por último, si hemos
+encontrado la cadena, fijamos una variable <em>índice</em>, al valor de
+<em>i</em>, indicando la posición en la que se encuentra la cadena dentro del
+texto.
+<p>Si lo ejecutamos secuencialmente, vamos recorriendo cada caracter del texto
+y buscamos la coincidencia con la cadena desde esa posición. Si la
+encontramos, asignamos el valor de esa posición a la variable global.
+¿Cómo haríamos para ejecutar este programa en paralelo? Básicamente, podemos
+ver que podríamos hacer todas comprobaciones de coincidencia con la cadena en
+paralelo, es decir, las del bucle exterior, por lo que podemos hacer un
+<span class=palabra>ASYNC</span> por iteración y englobar el bucle en un
+<span class=palabra>FINISH</span>. 
+<pre class=code>
+FINISH {
+	for ( int i = 0; i < m-n; i++ ) {
+		coincide = true;
+		ASYNC {
+			for (int j = 0; coincide && j < n-1; j++ )
+				if ( texto[i+j] != cadena[j] )
+					coincide = false;
+		}
+	if ( coincide )
+		índice = i;
+	}
+}
+</pre>
+<p>La pregunta ahora es ¿cuál es el valor de índice? Si la cadena se
+encuentra en el texto muchas veces, el valor final es no determinista:
+podríamos obtener el valor 5, 10… Y diferentes ejecuciones del programa
+obtendrán valores diferentes. Pero es un no determinismo benigno porque
+siempre se obtiene una respuesta aceptable.
+
+
 			</section>
 			<footer>
 <nav class=pie>
