@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-06-14">
-		<meta name=modified content="2021-08-25">
+		<meta name=modified content="2021-08-26">
 		<link rel=stylesheet href="estilo.css">
 
 <!--
@@ -32,6 +32,7 @@
 					<li><a href=#amdhal>Ley de Amdhal</a></li>
 					<li><a href=#streams>Streams en Java</a></li>
 					<li><a href=#determinismo>Determinismo</a></li>
+					<li><a href=#bucles>Bucles en paralelo</a></li>
 
 				</ol> 
 			</nav>
@@ -1437,10 +1438,10 @@ paralelo, es decir, las del bucle exterior, por lo que podemos hacer un
 <span class=palabra>ASYNC</span> por iteración y englobar el bucle en un
 <span class=palabra>FINISH</span>. 
 <pre class=code>
-FINISH {
+<span class=palabra>ASYNC</span> {
 	for ( int i = 0; i < m-n; i++ ) {
 		coincide = true;
-		ASYNC {
+		<span class=palabra>ASINC</span> {
 			for (int j = 0; coincide && j < n-1; j++ )
 				if ( texto[i+j] != cadena[j] )
 					coincide = false;
@@ -1455,6 +1456,185 @@ encuentra en el texto muchas veces, el valor final es no determinista:
 podríamos obtener el valor 5, 10… Y diferentes ejecuciones del programa
 obtendrán valores diferentes. Pero es un no determinismo benigno porque
 siempre se obtiene una respuesta aceptable.
+
+			</section>
+			<footer>
+			<section id=Bucles>
+				<header>
+					<h1 id=bucles>Bucles en paralelo</h1>
+				</header>
+<p>Los bucles constituyen una gran parte del tiempo de ejecución de muchos
+programas, pudiendo tener múltiples formatos.
+<p>Una estructura general de bucle podría ser algo como la búsqueda de
+punteros en un lista enlazada, implementada con un <em>for</em>. En este caso,
+una referencia <em>p</em>, inicializada al primer nodo; una comprobación de
+que el nodo no es <em>null</em>; y una asignación al siguiente elemento de la
+lista. En el cuerpo del bucle, tendremos algún tipo de cálculo como función
+de <em>p</em>.
+<pre class=code>
+for ( p = HEAD; p != null; p = p.next ) {
+	compute(p);
+}
+</pre>
+<p>Esto es una ejecución secuencial porque hay que ir de un elemento al
+siguiente, uno tras otro, siguiendo los punteros de la lista enlazada. Pero
+podríamos poner un <span class=palabra>ASINC</span> correspondiendo a esa
+función y un <span class=palabra>FINISH</span> que englobe a todo el bucle:
+ahora tenemos una ejecución paralela porque la (ejecución) de la función de
+cada elemento puede realizarse de manera independiente.
+<pre class=code>
+<span class=palabra>FINISH</span> {
+	for ( p = HEAD; p != null; p = p.next ) {
+		<span class=palabra>ASINC</span> compute(p);
+        }
+}
+</pre>
+<p>El grafo computacional de este ejemplo podría ser algo similar a:
+<ol>
+	<li>asigna al puntero la cabeza de la lista
+	<li>comprueba si es distinto de nulo
+	<li>si lo es
+		<ol style="list-style-type:lower-alpha">
+			<li>crea una nueva instancia de ejecución para invocar
+				la función
+			<li>avanza el puntero al siguiente elemento y vuelve a
+				2
+		</ol>
+</ol>
+<p>Se puede ver claramente que existe el paralelismo entre los casos,
+<em>a</em> y <em>b</em>, de ejecución de la función.
+Y es posible obtener paralelismo en cualquier bucle, utilizando
+<span class=palabra>ASYNC</span> y <span class=palabra>FINISH</span>
+de esta manera.
+
+<h2>Bucle por contador</h2>
+<p>En la práctica, existe un caso especial muy importante: el <b>bucle
+controlado por contador</b>. En este caso es conocido el número total de
+iteraciones desde el principio.
+<p>Supongamos que estamos sumando dos vectores. El modelo iterativo es el de
+un bucle <em>for</em> que se ejecuta desde cero hasta la longitud de los
+vectores, <em>N</em>, menos 1; de modo que <em>a<sub>i</sub></em> es igual a
+<em>b<sub>i</sub></em> más <em>c<sub>i</sub></em>.
+<pre class=code>
+for ( int i = 0; i < N-1; i++ )
+	a[i] = b[i] + c[i]
+</pre>
+<p>Hay una gran diferencia entre este bucle y el de la lista enlazada:
+conocemos el número de iteraciones a realizar antes de empezar el bucle.
+Esto puede resultar muy útil para la eficiencia del paralelismo y, de hecho,
+muchos modelos de programación utilizan el término
+<span class=palabra>forall</span>, queriendo decir: ejecuta todas las
+iteraciones en paralelo.
+<pre class=code>
+forall ( i: [0:N) )
+	a[i] = b[i] + c[i]
+</pre>
+<p>Y su significado es exactamente el mismo que hemos visto con la
+construcción <em>FINISH-for-ASYNC</em>. Se puede pensar de forma lógica en
+la creación de una tarea distinta para cada iteración y un
+<em>FINISH</em> cuando todo el <span class=palabra>forall</span>
+se haya ejecutado.
+<br>Nota: en el código se ha utilizado una notación diferente para el rango
+de ejecución, con el formato <em>variable: [mínimo:máximo)</em>; el corchete
+indica que su valor (asociado) está incluido y el paréntesis lo contrario.
+<p>De este modo, cualquier bucle puede ser transformado en un bucle paralelo,
+si ello es legítimo, haciendo que todas sus iteraciones se ejecuten de forma
+independiente.
+<p>Este caso, por ejemplo, puede expresarse de forma mucho más elegante
+utilizando <em>Streams</em>, porque lo que hay que hacer es generar un rango
+acotado de <em>0</em> a <em>N</em> (excluido) con el método
+<a class=metodo target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/stream/IntStream.html#range(int,int)>range</a>(),
+convertirlo en un <em>stream paralelo</em> y utilizar un
+<span class=metodo>forEach</span>() para realizar la operación para cada
+iteración del bucle.
+<pre class=code>
+IntStream.range(0, N)
+	.paralell()
+	.foreach(i -> a[i] = b[i] + c[i])
+</pre>
+<p>Puede incluso ser más elegante si devuelves un vector,
+como en la suma del <span class=palabra>forall</span>: lo que tienes que hacer
+es convertirlo en un vector con
+<a class=metodo target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/stream/IntStream.html#toArray()>toArray</a>(),
+en lugar del <span class=metodo>forEach</span>(), en que cada elemento no es
+más que la suma de los elementos correspondientes de los otros dos vectores y
+asignarlo al vector <em>a</em>.
+<pre class=code>
+<span class=modificado>a =</span> IntStream.range(0, N)
+	.paralell()
+	<span class=modificado>.toArray(i -> b[i] + c[i])</span>
+</pre>
+<p>Pero el punto importante y a destacar es el uso del método
+<span class=metodo>parallel</span>(), que proporciona paralelismo, como ya
+vimos.
+<p>Puede ocurrir, no obstante, que el bucle se utilice para calcular más de
+un valor; por ejemplo, que calcule también un vector <em>d</em>, como la resta
+entre <em>b</em> y <em>c</em>. En estos casos, teniendo varios valores de
+salida, no resulta conveniente utilizar streams.
+<p>Un problema muy común es un algoritmo del álgebra lineal denominado
+<b>producto matricial</b>. Supongamos que tenemos dos matrices <em>A</em> y
+<em>B</em>, que queremos multiplicar para obtener <em>C</em>; siendo <em>A</em>
+una matriz <em>mxp</em> y <em>B</em> una matriz <em>pxn</em>, obtendremos una
+matriz <em>mxn</em>, <em>C</em>, cuyos elementos c<sub>ij</sub> son resultado
+del producto escalar de los elementos de la fila <em>i</em> de la matriz
+<em>A</em> por los elementos de la columna <em>j</em> de la matriz <em>B</em>.
+<div class=image id=img_04_03 style="width:80%; margin-left:10%">
+	<img src=imagenes/04_03_matriz.png style="width:80%"
+	     alt="Representación del producto de dos matrices donde cada
+	     elemento de la matriz resultado es igual al producto interno
+	     de los vectores formados por: la fila correspondiente al elemento
+	     en la primera matriz y la columna correspondiente al elemento
+	     en la segunda matriz">
+	<p class=caption>Representación del producto de dos matrices
+</div>
+<p>Producto interno que podemos expresar como el sumatorio desde <em>k</em>
+igual a <em>1</em> hasta <em>p</em> de </em>a<sub>ik</sub></em> por
+<em>b<sub>kj</sub></em>.
+<div class=image id=img_04_04 style="margin-left:10%">
+	<img src=imagenes/04_04_sumatorio.png style="width:10em"
+	     alt="Formula del producto interno para cada elmento de la
+	     matriz resultado del producto de otras dos">
+	<p class=caption>Producto interno
+</div>
+<p>Si lo expresamos como un algoritmo, es equivalente a un bucle <em>for</em>
+en el que <em>i</em> varía de <em>0</em> a <em>m-1</em> y <em>j</em> lo hace
+de <em>0</em> a <em>n-1</em>. Notad que se implementaría como dos bucles
+anidados. De este modo, hacemos el elemento igual a cero e introducimos un
+nuevo bucle que variará de <em>0</em> a <em>p-1</em> y que irá sumando al
+elemento el producto de cada elemento de la fila <em>i</em> de <em>A</em> por
+el correspondiente de la columna <em>j</em> de <em>B</em>.
+<pre class=code>
+for ( int i = 0; i < m-1; i++ ) {
+	for ( int j = 0; j < n-1; j++ ) {
+		c[i][j] = 0;
+		for ( int k = 0; k < p-1; k++ )
+			c[i][j] += a[i][k]*b[k][j]
+}
+</pre>
+<p>Pero a nosotros nos interesa el paralelismo: ¿cómo podemos conseguir que
+esto se ejecute en forma paralela? Pensemos en los bucles de <em>i</em> y
+<em>j</em>: podemos ver fácilmente que el cálculo de cada elemento 
+<em>c<sub>ij</sub></em> de la matriz <em>C</em> puede ser obtenido de forma
+independiente. Por ello, en lugar de un <em>for</em>, podríamos tener un
+<em>forall</em>, que puede funcionar para cualquier número de iteraciones
+n-dimensionales.
+<pre class=code>
+forall ( [i,j]: [0,m)[0,n) ) {
+	c[i][j] = 0;
+	for ( k: [0:p) )
+		c[i][j] += a[i][k] * b[k][j]
+}
+</pre>
+<p>¿Qué pasa ahora con el bucle de <em>k</em>, puede ejecutarse
+en paralelo? Lo cierto es que, si todos esos productos que realizan una suma
+con el valor del elemento <em>c<sub>ij</sub></em> se ejecutan en paralelo, nos
+encontraremos con una condición de carrera: debemos mantener la ejecución
+secuencial de este bucle.
+<br>Nota: pero podríamos tratar el producto interno como la suma de vectores
+que usábamos como ejemplo, si lo resolviéramos usando el <em>fork-join
+framework</em>.
+
+
 
 
 			</section>
