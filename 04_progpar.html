@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-06-14">
-		<meta name=modified content="2021-08-26">
+		<meta name=modified content="2021-08-28">
 		<link rel=stylesheet href="estilo.css">
 
 <!--
@@ -758,8 +758,9 @@ con dos procesadores. El planificador hará que las instrucciones se repartan
 entre ambos: tras la ejecución de S1, el primer procesador podría ejecutar S2
 y S3, mientras que el segundo ejecutaría S4 y S5. A continuación, el primer
 procesador ejecutaría S6 y, finalmente, se ejecutaría S7.
-<p>Como vemos, con esta planificación, <em>T<sub>2</sub> = 14</em>. Los instantes en
-que el segundo procesador no está ejecutando instrucciones se denominan
+<p>Como vemos, con esta planificación, <em>T<sub>2</sub> = 1+1+1+10+1 = 14</em>.
+Los instantes en que el segundo procesador no está ejecutando instrucciones
+se denominan
 <span class=palabra>IDLE</span> (ocioso); uno de los objetivos de la
 paralelización es reducir al mínimo el tiempo en que el procesador permanece
 ocioso.
@@ -813,9 +814,9 @@ un tiempo de ejecución
 		<mo>+</mo>
 		<mi>X</mi>
 	</mrow>
-</math>
-, suponiendo que lo dividimos por 2 y <em>X</em> es el tiempo que el sistema
-requiere para que ello sea posible. En una nueva ejecución, ese tiempo sería
+</math>, suponiendo que lo dividimos por 2 y <em>X</em> es el tiempo que el
+sistema requiere para que ello sea posible. En una nueva ejecución, ese
+tiempo sería
 <math xmlns="http://www.w3.org/1998/Math/MathML">
 	<mrow>
 		<mfrac>
@@ -858,8 +859,7 @@ y así, sucesivamente, hasta llegar a hacer <em>n</em> particiones:
 		<mo>)</mo>
 		<mi>X</mi>
 	</mrow>
-</math>
-. Podemos realizar el mismo desarrollo calculándolo para 3 particiones
+</math>. Podemos realizar el mismo desarrollo calculándolo para 3 particiones:
 
 <table border id=tabla_04_01>
 	<thead>
@@ -1127,8 +1127,8 @@ argumentos, ya que el compilador puede inferirlos por el contexto. El cuerpo
 de la función puede ser una expresión simple, devolviendo el resultado de
 evaluar dicha expresión –que puede ser de tipo void y no devolver nada-, o
 puede ser como el cuerpo de cualquier otro método: encerrando en un bloque
-(entre llaves) con las instrucciones separadas por puntos y comas; si queremos
-que devuelva un valor, deberemos utilizar return.
+(entre llaves) con las instrucciones finalizadas por puntos y comas; si
+queremos que devuelva un valor, deberemos utilizar return.
 <p>En
 <a href=https://es.wikipedia.org/wiki/Expresi%C3%B3n_lambda#Java>Wikipedia</a>
 podéis encontrar una serie de ejemplos de funciones lambda. El último ejemplo
@@ -1215,10 +1215,37 @@ expresión:
 <br><span class=code>( objeto, parametrosActuales ) -> objeto.metodo(parametrosActuales)</span>
 <br>puede ser reemplazada por:
 <br><span class=code>ClaseDelObjeto::metodo</span>
-<p>Un ejemplo simple es el que aparece en el <a target=_blank
-href=https://docs.oracle.com/javase/tutorial/java/javaOO/methodreferences.html>tutorial</a> de Java:
+<p>Vamos a ver cómo podríamos haber implementado un ejemplo bastante simple
+que aparece en el <a target=_blank
+href=https://docs.oracle.com/javase/tutorial/java/javaOO/methodreferences.html>tutorial</a> de Java.
+Sea un vector de cadenas que vamos a ordenar, utilizando una función de
+ordenación determinada por el usuario; en este caso, la comparación alfabética,
+sin importar si están en mayúsculas o minúsculas. El método
+<a class=metodo target=_blank
+	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/Arrays.html#sort(T%5B%5D,java.util.Comparator)>sort</a>()
+toma como parámetro un <a class=metodo target=_blank
+	href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/Comparator.html>Comparator</a>,
+que es un interfaz con una función de comparación. Eso significa que, para
+utilizarlo, deberíamos crear un comparador y después podríamos pasarlo al
+método de ordenación:
 <pre class=code>
 String[] stringArray = { "Barbara", "James", "Mary", "John", "Patricia", "Robert", "Michael", "Linda" };
+
+class ComparaMisCadenas implements Comparator&lt;String&gt; {
+	public int compare ( String s1, String s2 ) {
+		return s1.compareToIgnoreCase(s2);
+	}
+}
+
+Arrays.sort(stringArray, new ComparaMisCadenas());
+</pre>
+<p>Al poder hacer uso de la función lamdba, en lugar de crear el
+<span class=clase>Comparator</span>, podemos pasarla directamente:
+<pre class=code>
+Arrays.sort(stringArray, (s1, s2) -> s1.compareToIgnoreCase(s2));
+</pre>
+<p>O como podemos ver en el ejemplo del tutorial, aún más sencillo:
+<pre class=code>
 Arrays.sort(stringArray, String::compareToIgnoreCase);
 </pre>
 <p>La referencia al constructor es muy similar a la referencia a un método
@@ -1260,6 +1287,10 @@ coleccion
 	    href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/Collection.html#stream()>stream</a>()
 	.forEach(System.out::println);
 </pre>
+<p>Resulta posible también crear un <em>stream</em> desde un vector a través
+del método estático <a class=metodo target=_blank
+href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/Arrays.html#stream(T%5B%5D)>stream</a>() de la clase
+<span class=clase>Arrays</span>.
 <p>Un ejemplo más complicado puede ser aquél en el que queremos conocer la
 media aritmética del valor de algunos de los elementos de la colección.
 Empezaríamos recorriendo la colección y añadiendo los valores que cumplen la
@@ -1575,9 +1606,10 @@ salida, no resulta conveniente utilizar streams.
 <b>producto matricial</b>. Supongamos que tenemos dos matrices <em>A</em> y
 <em>B</em>, que queremos multiplicar para obtener <em>C</em>; siendo <em>A</em>
 una matriz <em>mxp</em> y <em>B</em> una matriz <em>pxn</em>, obtendremos una
-matriz <em>mxn</em>, <em>C</em>, cuyos elementos c<sub>ij</sub> son resultado
-del producto escalar de los elementos de la fila <em>i</em> de la matriz
-<em>A</em> por los elementos de la columna <em>j</em> de la matriz <em>B</em>.
+matriz <em>mxn</em>, <em>C</em>, cuyos elementos <em>c<sub>ij</sub></em> son
+resultado del producto escalar de los elementos de la fila <em>i</em> de la
+matriz <em>A</em> por los elementos de la columna <em>j</em> de la matriz
+<em>B</em>.
 <div class=image id=img_04_03 style="width:80%; margin-left:10%">
 	<img src=imagenes/04_03_matriz.png style="width:80%"
 	     alt="Representación del producto de dos matrices donde cada
@@ -1588,14 +1620,26 @@ del producto escalar de los elementos de la fila <em>i</em> de la matriz
 	<p class=caption>Representación del producto de dos matrices
 </div>
 <p>Producto interno que podemos expresar como el sumatorio desde <em>k</em>
-igual a <em>1</em> hasta <em>p</em> de </em>a<sub>ik</sub></em> por
+igual a <em>1</em> hasta <em>p</em> de <em>a<sub>ik</sub></em> por
 <em>b<sub>kj</sub></em>.
+<!-- Hay que representarlo con MathML, en lugar de una imagen -->
 <div class=image id=img_04_04 style="margin-left:10%">
 	<img src=imagenes/04_04_sumatorio.png style="width:10em"
 	     alt="Formula del producto interno para cada elmento de la
 	     matriz resultado del producto de otras dos">
 	<p class=caption>Producto interno
 </div>
+<aside>
+Una matriz se representa como un <i>array</i> bidimensional, una colección de
+componentes, todas del mismo tipo, que se estructuran en dos dimensiones.
+Identificamos las dimensiones como <em>FxC</em>, que representa el número de
+filas (<em>F</em>) por el número de columnas (<em>C</em>). Y, en Java, se
+declara como un vector de vectores del tipo correspondiente; por ejemplo, una
+<em>matriz</em> de enteros se instanciaria:
+<br><span class=code>int[][] matriz = new int[filas][columnas];</span>
+<br>Es decir, un vector que contiene <em>columnas</em> elementos, siendo, cada
+uno de esos elementos, vectores que contienen <em>filas</em> números enteros.
+</aside>
 <p>Si lo expresamos como un algoritmo, es equivalente a un bucle <em>for</em>
 en el que <em>i</em> varía de <em>0</em> a <em>m-1</em> y <em>j</em> lo hace
 de <em>0</em> a <em>n-1</em>. Notad que se implementaría como dos bucles
@@ -1630,9 +1674,8 @@ en paralelo? Lo cierto es que, si todos esos productos que realizan una suma
 con el valor del elemento <em>c<sub>ij</sub></em> se ejecutan en paralelo, nos
 encontraremos con una condición de carrera: debemos mantener la ejecución
 secuencial de este bucle.
-<br>Nota: pero podríamos tratar el producto interno como la suma de vectores
-que usábamos como ejemplo, si lo resolviéramos usando el <em>fork-join
-framework</em>.
+<br>Nota: pero podríamos tratar el producto interno del mismo modo en que, al
+explicar el <em>fork-join framework</em>, resolvíamos la suma de vectores.
 
 
 
