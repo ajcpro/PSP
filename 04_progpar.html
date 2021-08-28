@@ -1076,7 +1076,7 @@ ejecución, tendremos que su tiempo de ejecución vendrá dado por:
                 <mi>X</mi>
         </mrow>
 </math>
-<p>De esa fórmula, podemos deducir, fácilmente, que, para algún número de
+<p>De esa fórmula podemos deducir fácilmente que, para algún número de
 divisiones, el tiempo que se necesita para que el sistema disponga los
 recursos necesarios para paralelizar es igual o mayor que el tiempo necesario
 para que se ejecute secuencialmente, por lo que es preferible ejecutarlo de
@@ -1340,13 +1340,14 @@ media = colección
 iterar de forma explícita o crear colecciones intermedias.
 <p>Con los ejemplos que veíamos antes, a las funciones como <em>filter</em> se
 las denomina <b>funciones intermedias</b> porque producen un nuevo stream,
-mientras que las funciones como <em>forEach</em>, que no producen un stream,
-se denominan <b>funciones terminales</b>.
+mientras que las funciones como <em>average</em>, que no producen un stream,
+se denominan <b>funciones terminales</b>; estas funciones consumen el
+<em>stream</em>: si se usara una variable, ésta no podría volverse a usar.
 <p>Un <em>pipeline</em> tiene que tener un origen: este puede ser un vector,
 una colección, una función generadora o un flujo de <i>ES</i>. También una
 serie de funciones intermedias, aunque puede no haber ninguna. Y, finalmente,
 una función terminal.
-<p>Funciones como <em>filter</em>, <em>mapToInt</em> o <em>average</em> son
+<p>Funciones como <em>filter</em> o <em>mapToInt</em> son
 denominadas <b>funciones de agregación</b> porque aplican la función indicada
 a cada elemento del <em>stream</em>. Aunque pueden parecer iteradores, o que
 se comportan como ellos, hay diferencias fundamentales. Con un iterador, el
@@ -1356,12 +1357,40 @@ determina cómo operar sobre ellos. Las funciones procesan elementos del
 stream, no de la colección, por lo que son denominadas <b>operaciones de
 <em>stream</em></b> (<em><b>stream operations</b></em>). Por último, la
 mayoría de las funciones de agregación reciben como parámetro una función,
-por lo que se puede adaptar el modo de trabajo de función a través de una
-expresión lambda.
+por lo que se puede adaptar el modo de trabajo de estas funciones a través de
+una expresión lambda.
+<p>En el ejemplo aparece también la función <em>average</em> que, además de
+ser una función terminal, es una de las denominadas funciones de
+<em>reducción</em>, ya que "reducen" el <em>stream</em> a un único valor.
+El API define más funciones como <span class=metodo>min</span>(),
+<span class=metodo>max</span>() o <span class=metodo>sum</span>(); las
+denomina <i>special cases of reduction</i> porque realizan una función
+específica.
+<p>Para el caso general, el interfaz define más versiones del método
+<a class=metodo target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/stream/DoubleStream.html#reduce(java.util.function.DoubleBinaryOperator)>reduce</a>(),
+aunque aquí solo voy a comentar la que toma como parámetro un
+<a class=clase target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/function/DoubleBinaryOperator.html>DoubleBinaryOperator</a>.
+Es un interfaz funcional especilización del operador binario que define un
+método <span class=metodo>applyAsDouble</span>(), que toma dos números en
+doble precisión y devuelve como resultado también un número en doble
+precisión. La operación de reducción consiste en aplicar el método a los
+elementos del <em>stream</em> con un acumulador. Por ejemplo, recordemos que
+queríamos sumar los elementos de un vector. Tendríamos que escribir:
+<br><span class=code>suma = miVector.stream().reduce((a,b) -> a+b));</span>
+<br>Podemos intuir que es equivalente a definir un acumulador, de manera que
+la operación <em>reduce</em> va sumando cada elemento del vector a dicho
+acumulador o, lo que es lo mismo que, para cada elemento del <em>stream</em>,
+<em>a</em> tomaría el valor del acumulador y <em>b</em> el del elemento,
+aplicaría la operación, una suma en este caso, y guardaría el resultado en el
+acumulador.
+La documentación indica que la operación debe ser <em>sin estado</em>: cada
+elemento se procesa de forma independiente; <em>sin interferencia</em>: la
+operación no modifica el origen de datos; y <em>asociativa</em>: el resultado
+de la función es el mismo para <em>a op b</em> que para <em>b op a</em>.
 
 <h3>Paralelismo</h3>
 <p>Y ahora viene la pregunta del millón: ¿qué tienen que ver los
-<em>streams</em>? ¿Cómo pueden ayudar al mismo?
+<em>streams</em> con el paralelismo?, ¿cómo pueden ayudar al mismo?
 <p>Existe un modo muy elegante de convertir cualquier computación con
 <em>streams</em> desde su ejecución secuencial a paralelo. Y eso es porque
 Java puede ejecutar <em>streams</em> en paralelo: cuando lo hace así, divide
