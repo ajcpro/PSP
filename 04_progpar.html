@@ -165,8 +165,9 @@ Además, los puntos 1 y 2 pueden ser intercambiandos.
 <p>Supongamos que tenemos una secuencia de tareas o instrucciones S1, S2, S3…
 Nuestro objetivo consiste en determinar <em>cuáles de ellas pueden ejecutarse
 en paralelo y cómo podemos coordinar ese paralelismo</em>.
-<p>Vamos a imaginar que tenemos un vector y que queremos sumarlos. El algoritmo
-es simple: utilizamos un acumulador -<em>suma</em>, inicializado a cero- al
+<p>Vamos a imaginar que tenemos un vector y que queremos sumar sus elementos.
+El algoritmo es simple: utilizamos un acumulador -<em>suma</em>, inicializado
+a cero- al
 que vamos sumando cada uno de los elementos del vector, por ejemplo, con un
 bucle. El acumulador contendrá la suma de los elementos del vector.
 ¿Qué sucedería si dividimos el vector en dos partes, izquierda y derecha?
@@ -466,7 +467,7 @@ hay un servicio con el que vamos a poder trabajar. Podemos también utilizarlo,
 explícitamente: en algún punto de nuestro código invocaremos una instancia
 de la clase que extiende el <span class=clase>RecursiveAction</span> como
 muestra el código siguiente:
-<pre>
+<pre class=code>
 class Programa {
     ...
     class Ejemplo extends RecursiveAction {
@@ -527,8 +528,8 @@ class Suma extends <span class=modificado>RecursiveTask&lt;Double&gt;</span> {
 </pre>
 <p>Vemos, en primer lugar, que <span class=clase>RecursiveTask</span> es
 una clase genérica y, por tanto, asignamos la clase de datos con los que
-va a trabajor al crearla: en este caso, <span class=clase>Double</span>.
-A continuación, hemos eliminado el atributo <em>suma</em>, al resultar
+va a trabajar al crearla: <span class=clase>Double</span>, en este caso.
+A continuación, hemos eliminado el atributo <em>suma</em> al resultar
 innecesario: el valor es devuelto por la función. Finalmente, la ventaja
 de utilizar este <i>framework</i> es que la propia clase gestiona la
 utilización de un futuro, que nos devuelve con el método
@@ -547,7 +548,7 @@ finalización en orden inverso al que han sido creadas:
 <p>Si, por ejemplo, tuviéramos tres tareas, deberíamos, al menos, crear dos
 instancias con <span class=metodo>fork</span> y que la tercera ejecutara el
 <span class=metodo>compute</span>, aunque también podríamos crear tres
-instancias. Si el número de tareas es mayor, podemos, por ejemplo utilizar
+instancias. Si el número de tareas es mayor, podemos, por ejemplo, utilizar
 colecciones para almacenar esas tareas y lanzar, automáticamente, las
 instancias que sean necesarias con <span class=metodo>invokeAll</span>.
 Finalmente, recuperaremos sus valores con <span class=metodo>join</span>.
@@ -619,7 +620,7 @@ de S2 y un <span class=palabra>FINISH</span> que engloba a S2 y S3:
 </span>
 lo represento sin llaves pero significa igualmente que S2 se ejecutará de
 forma asíncrona y esperaremos a la finalización (de lo que precede) antes
-de que se ejecute S4. En el formato que hemos visto en Java, podemos
+de que se ejecute S4. En el formato que hemos visto en Java podemos
 representarlo con el par Fork-Join, asumiendo que S2 fuera una
 <span class=clase>ForkJoinTask</span>:
 <span class=code>
@@ -1119,8 +1120,9 @@ generar esa función en el parámetro actual, como función anónima.
 <p>Su <a href=https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.27>sintaxis</a>
 en <a href=https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html>Java</a>
 es sencilla: se indica la lista de parámetros, separados por comas, entre
-paréntesis, seguidos del símbolo de la flecha (el guión y el símbolo de
-mayor que, en ese orden), finalizando con el cuerpo de la función. Resulta
+paréntesis, seguidos del símbolo de la flecha <em>-&gt;</em> (el guión y el
+símbolo de mayor que, en ese orden), finalizando con el cuerpo de la función.
+Resulta
 posible suprimir los paréntesis si solo hay un parámetro (o poner solo los
 paréntesis si no los hay) y no es necesario indicar el tipo de datos de los
 argumentos, ya que el compilador puede inferirlos por el contexto. El cuerpo
@@ -1129,11 +1131,32 @@ evaluar dicha expresión –que puede ser de tipo void y no devolver nada-, o
 puede ser como el cuerpo de cualquier otro método: encerrando en un bloque
 (entre llaves) con las instrucciones finalizadas por puntos y comas; si
 queremos que devuelva un valor, deberemos utilizar return.
-<p>En
-<a href=https://es.wikipedia.org/wiki/Expresi%C3%B3n_lambda#Java>Wikipedia</a>
-podéis encontrar una serie de ejemplos de funciones lambda. El último ejemplo
-del primer bloque, el de
-<span class=code style="margin-left:0">(id, defaultPrice)</span>, contiene
+<p>Los siguientes ejemplos de funciones lambda están copiados de
+<a href=https://es.wikipedia.org/wiki/Expresi%C3%B3n_lambda#Java>Wikipedia</a>:
+<pre class=code>
+// sin parámetros
+() -&gt; System.out.println(&quot;Hello, world.&quot;)
+
+// Con un parámetro (este ejemplo es una función de identidad).
+a -&gt; a
+
+// Con una expresión
+(a, b) -&gt; a + b
+
+// Con información de tipo explícita
+(long id, String name) -&gt; &quot;id: &quot; + id + &quot;, name:&quot; + name
+
+// Con un bloque de código
+(a, b) -&gt; { return a + b; }
+
+// Con múltiples afirmaciones en el cuerpo lambda. Necesita un bloque de código.
+// Este ejemplo también incluye dos expresiones lambda anidadas (la primera también es una clausura).
+(id, defaultPrice) -&gt; {
+  Optional&lt;Product&gt; product = productList.stream().filter(p -&gt; p.getId() == id).findFirst();
+  return product.map(p -&gt; p.getPrice()).orElse(defaultPrice);
+}
+</pre>
+El último ejemplo contiene
 expresiones asociadas a un <em>stream</em>, objeto de esta sección. Es
 importante tener en cuenta que puede declarar variables locales pero también
 que tiene acceso a las variables declaradas en los bloques que engloban a la
@@ -1163,7 +1186,7 @@ expresión lambda para asignar contexto a una referencia al interfaz funcional.
 Creamos un objeto del tipo del interfaz y le asignamos una función lambda:
 <pre class=code>
 miNumero numero;
-miNumero = () -> 1.23;
+miNumero = () -&gt; 1.23;
 </pre>
 <p>¿Qué sucede ahora si utilizamos el objeto o, más propiamente, su
 <em>método abstracto único</em>?
@@ -1173,7 +1196,7 @@ System.out.println("Número fijo: " + numero.elNumero());
 <p>Ese código imprimirá <em>Número fijo: 1.23</em>.
 <p>Podemos también, por ejemplo, asignar una función diferente al método:
 <pre class=code>
-miNumero = () -> Math.random() * 50;
+miNumero = () -&gt; Math.random() * 50;
 System.out.println("Núm. aleat.: " + numero.elNumero());
 System.out.println("Otro aleat.: " + numero.elNumero());
 </pre>
@@ -1201,7 +1224,7 @@ class MiClase {
 }
 </pre>
 <p>En lugar de escribir la función lambda:
-<br><span class=code>( parametrosActuales ) -> MiClase.metodoEstatico(parametrosActuales)</span>
+<br><span class=code>( parametrosActuales ) -&gt; MiClase.metodoEstatico(parametrosActuales)</span>
 <br>los métodos estáticos de clase se transforman en la siguiente referencia
 a método:
 <br><span class=code>MiClase::metodoEstatico</span>
@@ -1212,7 +1235,7 @@ invocamos al método no estático, desde el identificador del objeto.
 en los que vamos a aplicar nuestra función lambda a varios objetos del mismo
 tipo o clase. Si suponemos que tenemos un objeto del tipo ClaseDelObjeto, la
 expresión:
-<br><span class=code>( objeto, parametrosActuales ) -> objeto.metodo(parametrosActuales)</span>
+<br><span class=code>( objeto, parametrosActuales ) -&gt; objeto.metodo(parametrosActuales)</span>
 <br>puede ser reemplazada por:
 <br><span class=code>ClaseDelObjeto::metodo</span>
 <p>Vamos a ver cómo podríamos haber implementado un ejemplo bastante simple
@@ -1239,12 +1262,17 @@ class ComparaMisCadenas implements Comparator&lt;String&gt; {
 
 Arrays.sort(stringArray, new ComparaMisCadenas());
 </pre>
-<p>Al poder hacer uso de la función lamdba, en lugar de crear el
-<span class=clase>Comparator</span>, podemos pasarla directamente:
+<p>Al poder hacer uso de la función lamdba, podríamos prescindir de la clase
+<span class=clase>Comparator</span>:
 <pre class=code>
-Arrays.sort(stringArray, (s1, s2) -> s1.compareToIgnoreCase(s2));
+Comparator&lt;String&gt; cmc = (s1, s2) -&gt; s1.compareToIgnoreCase(s2);
+Arrays.sort(stringArray, cmc);
 </pre>
-<p>O como podemos ver en el ejemplo del tutorial, aún más sencillo:
+Que, en un caso tan simple como este, podemos pasarla directamente:
+<pre class=code>
+Arrays.sort(stringArray, (s1, s2) -&gt; s1.compareToIgnoreCase(s2));
+</pre>
+<p>Y como podemos ver en el ejemplo del tutorial, aún más sencillo:
 <pre class=code>
 Arrays.sort(stringArray, String::compareToIgnoreCase);
 </pre>
@@ -1360,8 +1388,8 @@ mayoría de las funciones de agregación reciben como parámetro una función,
 por lo que se puede adaptar el modo de trabajo de estas funciones a través de
 una expresión lambda.
 <p>En el ejemplo aparece también la función <em>average</em> que, además de
-ser una función terminal, es una de las denominadas funciones de
-<em>reducción</em>, ya que "reducen" el <em>stream</em> a un único valor.
+ser una función terminal, es una de las denominadas <b>funciones de
+reducción</b>, ya que "reducen" el <em>stream</em> a un único valor.
 El API define más funciones como <span class=metodo>min</span>(),
 <span class=metodo>max</span>() o <span class=metodo>sum</span>(); las
 denomina <i>special cases of reduction</i> porque realizan una función
@@ -1493,15 +1521,15 @@ texto.
 y buscamos la coincidencia con la cadena desde esa posición. Si la
 encontramos, asignamos el valor de esa posición a la variable global.
 ¿Cómo haríamos para ejecutar este programa en paralelo? Básicamente, podemos
-ver que podríamos hacer todas comprobaciones de coincidencia con la cadena en
-paralelo, es decir, las del bucle exterior, por lo que podemos hacer un
+ver que podríamos hacer todas las comprobaciones de coincidencia con la cadena
+en paralelo, es decir, las del bucle exterior, por lo que podemos hacer un
 <span class=palabra>ASYNC</span> por iteración y englobar el bucle en un
 <span class=palabra>FINISH</span>. 
 <pre class=code>
 <span class=palabra>ASYNC</span> {
 	for ( int i = 0; i < m-n; i++ ) {
 		coincide = true;
-		<span class=palabra>ASINC</span> {
+		<span class=palabra>ASYNC</span> {
 			for (int j = 0; coincide && j < n-1; j++ )
 				if ( texto[i+j] != cadena[j] )
 					coincide = false;
@@ -1538,14 +1566,14 @@ for ( p = HEAD; p != null; p = p.next ) {
 </pre>
 <p>Esto es una ejecución secuencial porque hay que ir de un elemento al
 siguiente, uno tras otro, siguiendo los punteros de la lista enlazada. Pero
-podríamos poner un <span class=palabra>ASINC</span> correspondiendo a esa
+podríamos poner un <span class=palabra>ASYNC</span> correspondiendo a esa
 función y un <span class=palabra>FINISH</span> que englobe a todo el bucle:
 ahora tenemos una ejecución paralela porque la (ejecución) de la función de
 cada elemento puede realizarse de manera independiente.
 <pre class=code>
 <span class=palabra>FINISH</span> {
 	for ( p = HEAD; p != null; p = p.next ) {
-		<span class=palabra>ASINC</span> compute(p);
+		<span class=palabra>ASYNC</span> compute(p);
         }
 }
 </pre>
