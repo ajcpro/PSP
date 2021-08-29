@@ -2,11 +2,11 @@
 
 <html lang=es>
 	<head>
-		<title>Programción paralela</title>
+		<title>Programación paralela</title>
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-06-14">
-		<meta name=modified content="2021-08-28">
+		<meta name=modified content="2021-08-29">
 		<link rel=stylesheet href="estilo.css">
 
 <!--
@@ -1731,10 +1731,71 @@ en paralelo? Lo cierto es que, si todos esos productos que realizan una suma
 con el valor del elemento <em>c<sub>ij</sub></em> se ejecutan en paralelo, nos
 encontraremos con una condición de carrera: debemos mantener la ejecución
 secuencial de este bucle.
-<br>Nota: pero podríamos tratar el producto interno del mismo modo en que, al
-explicar el <em>fork-join framework</em>, resolvíamos la suma de vectores.
 
-
+<h3>Agrupación</h3>
+<p>Volvamos a nuestro ejemplo de la suma de vectores. Como sabemos, al
+paralelizar, creamos <em>N</em> tareas; algo que puede ser realmente
+ineficiente porque aunque los vectores pueden tener millones de elementos,
+la suma se ejecutará en un máquina con 4, 6, 8... 32 procesadores, para lo
+que no se necesitan millones de tareas. De hecho, como ya comentamos, crear un
+número de tareas tan elevado va a hacer el programa más lento debido a la
+sobrecarga.
+<pre class=code>
+forall ( i: [0:N-1] )
+	a[i] = b[i] + c[i]
+</pre>
+<p>Una posible solución es la fragmentación o agrupación de iteraciones.
+Debemos observar que, aunque todas estas iteraciones pueden ejecutarse en
+paralelo, no todas tienen por qué ejecutarse en paralelo con las otras.
+Podemos crear dos niveles de bucles: uno paralelo, con una variable <em>g</em>
+que se ejecuta de <em>cero</em> a <em>NG-1</em>; y anidado en el mismo un
+bucle secuencial. <em>NG</em> representa el <b>número de grupos</b>, y
+<em>g</em> es el <b>identificador del grupo</b>. El bucle secuencial de
+variable <em>i</em>, iterará sobre los elementos asignados al grupo <em>g</em>,
+para lo que necesitamos conocer el <em>identificador de grupo</em>, el
+<em>número de grupos</em> y la <em>cantidad de elementos</em>. Una vez tenemos
+este bucle secuencial, podemos realizar la operación de suma.
+<pre class=code>
+forall ( g: [0:NG-1] )
+	for ( i: grupo(g, NG, [0:N-1]) )
+		a[i] = b[i] + c[i]
+</pre>
+<p>Algorítmicamente, la operación tiene la misma cantidad de operaciones pero,
+una vez hecho, el grado de paralelismo se reduce a <em>NG</em> tareas. Y el
+mejor valor de <em>NG</em> va a depender del tipo de programa y de la máquina
+en la que lo estás ejecutando; puede ser igual al número de procesadores, al
+doble pero, en cualquier caso, va a ser muy inferior al valor de <em>N</em>,
+tamaño del vector.
+<p>Como vemos, una estrategia sencilla que utiliza el hecho de que podemos
+agrupar iteraciones que se ejecutarán secuencialmente, pero en paralelo con
+las de otros grupos. Y eso nos lleva a la pregunta: ¿cómo determinamos los
+grupos? ¿Cómo determinamos esa función grupo?
+<p>Una de las estrategias más comunes es la denominada <b>agrupación de
+bloques</b> o <b>distribución de bloques</b>. En este caso, se toman
+iteraciones consecutivas y se asocian al mismo grupo. Es decir: tomamos el
+número total de iteraciones y las dividimos en tantos fragmentos como el
+número de grupos que tengamos. En operaciones bien balanceadas, como la suma
+de vectores, todos los fragmentos tendrán el mismo número de elementos, pero
+podríamos elegir hacerlos con un número diferente de elementos. Así, los
+primeros pertenecerían al grupo cero, los siguientes al uno, etc. Y el cálculo
+es tan simple como dividir <em>N</em> por <em>NG</em> y utilizar el valor
+<em>x</em> obtenido, de manera que los elementos de cada grupo son aquellos
+<em>gx + i</em>, con <em>i &lt; x</em>.
+<pre class=code>
+forall ( g: [0:NG-1] )
+	for ( i: [g * N/NG:, (g+1) * N/NG - 1]) )
+		a[i] = b[i] + c[i]
+</pre>
+<p>Otros métodos son posibles si, por ejemplo, la carga no está balanceada. En
+particular, si debe hacerse más trabajo al principio o al final del espacio de
+la iteración; o si algunas tareas son más costosas y otras deben permanecer
+inactivas, a la espera de que terminen al final del bucle paralelo. Una
+distribución muy utilizada es la denominada <b>cyclic</b>. Pensad, por ejemplo,
+en el reparto en un juego de cartas, en la que la mano va entregando una carta
+cada vez. De este modo, la primera iteración pertenecería al primer grupo, la
+segunda al segundo y así, sucesivamente, hasta el último grupo, de manera que
+la siguiente iteración volviéramos a asignarla al primer grupo, etc. Es
+sencillo ver que el grupo es simplemente <em>i mod NG</em>.
 
 
 			</section>
