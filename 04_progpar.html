@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-06-14">
-		<meta name=modified content="2021-08-29">
+		<meta name=modified content="2021-09-04"
 		<link rel=stylesheet href="estilo.css">
 
 <!--
@@ -1077,8 +1077,28 @@ ejecución, tendremos que su tiempo de ejecución vendrá dado por:
                 <mi>X</mi>
         </mrow>
 </math>
-<p>De esa fórmula podemos deducir fácilmente que, para algún número de
-divisiones, el tiempo que se necesita para que el sistema disponga los
+<p>De esa fórmula podemos deducir fácilmente que, cuando el número de
+divisiones <em>n</em> es:
+<p>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mrow>
+		<mi>n</mi>
+		<mo>=</mo>
+		<msub>
+			<mo>log</mo>
+			<mi>p</mi>
+		</msub>
+                <mfrac>
+                        <mrow>
+                                <mi>T</mi>
+                        </mrow>
+                        <mrow>
+                                <mi>X</mi>
+                        </mrow>
+                </mfrac>
+        </mrow>
+</math>
+<p>El tiempo que se necesita para que el sistema disponga los
 recursos necesarios para paralelizar es igual o mayor que el tiempo necesario
 para que se ejecute secuencialmente, por lo que es preferible ejecutarlo de
 forma secuencial. El <b>umbral paralelo</b> será una cantidad que represente

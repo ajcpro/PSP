@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-08-12">
-		<meta name=modified content="2021-08-16">
+		<meta name=modified content="2021-09-04">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -341,6 +341,123 @@ detenerse, aunque el planificador puede ignorar este hecho: comprobará si
 existe algún otro hilo con igual o mayor prioridad y, en caso de que no,
 continuará la ejecución de este hilo. Según la documentación, no suele ser
 apropiado utilizar este método.
+
+<h2>Agrupaciones de hilos</h2>
+<p>Un grupo de hilos es una clase, <a class=clase target=_blank
+href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/lang/ThreadGroup.html>ThreadGroup</a>,
+que permite asociar hilos relacionados entre
+sí como una unidad, permitiendo llevar a cabo acciones sobre el grupo como un
+todo, en lugar de sobre cada hilo por separado. Esto es útil en situaciones en
+las que deseas detener, volver a poner en ejecución o finalizar unos
+determinados hilos o que están relacionados. Por ejemplo, imaginemos un
+programa en que un grupo de hilos recibe datos, otro grupo los procesa, un
+tercero los muestra y otro los imprime; si se cancela la impresión, los grupos
+de hilos permiten detener simultáneamente todos los hilos dedicados a dicha
+tarea.
+<p>Existen dos constructores en los que, para ambos, una cadena especifica el
+nombre del grupo. Si solo se especifica éste, se crea un grupo cuyo padre es
+el hilo actual. Si se utilizan dos parámetros, el primero indicará qué grupo
+es el grupo padre del que se está creando. Como indica la especificación de la
+clase: <span class=cita>"los grupos de hilos forman un árbol en el que cada
+grupo tiene un padre a excepción del grupo de hilos inicial"</span>.
+<pre class=code>
+public static void main(String[] args) {
+    ThreadGroup miGrupo = new ThreadGroup("Mi Grupo");
+
+    class MiHilo implements Runnable {
+        public void run() {
+            for ( ; ; ) {
+                try {
+                    System.out.println("Estoy vivo: "
+                             + Thread.currentThread().getName());
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    System.out.println("Me han cancelado: "
+                             + Thread.currentThread().getName());
+                    return;
+                }
+            }
+        }
+    }
+
+    for ( int i = 0; i < 4; i++ )
+        new Thread(miGrupo, new MiHilo(), "Hilo " + i).start();
+
+    try {
+        Thread.sleep(4000);
+    } catch ( InterruptedException e ) {
+        System.out.println(e);
+    }
+
+    miGrupo.interrupt();
+}
+</pre>
+<p>En este sencillo ejemplo, creamos un grupo denominado <em>miGrupo</em>.
+Tenemos también una clase que implementa el método funcional
+<span class=clase>Runnable</em> de manera que se ejecuta indefinidamente; lo
+que hace es imprimir un mensaje con el nombre del hilo en que se ejecuta cada
+segundo, hasta que es interrumpido (por otro hilo). A continuación, crea
+cuatro hilos, que podrían ser el número que quisiéramos, cuyos ejecutables son
+objetos de la clase que hemos definido antes, y esperamos durante cuatro
+segundos. Tras ello, interrumpe a todo el grupo.
+<p>Este programa imprimirá dieciséis (16) mensajes del tipo <em>Estoy vivo:
+Hilo X</em>, correspondientes a la ejecución de los cuatro hilos, siendo
+<em>X</em> un valor que variará de cero (0) a (3), cada cuatro (4) ocasiones.
+Finalmente, se imprimirá cuatro veces el mensaje <em>Me han cancelado: Hilo
+X</em> y terminará el programa. Esto es así porque, intencionadamente, hemos
+capturado la interrupción y terminado la ejecución con <em>return</em>. De no
+haberlo hecho así, los cuatro hilos seguirían ejecutándose indefinidamente y
+el programa no finalizaría.
+<p>Podéis ampliar este programa para ver el grupo al que pertenece el hilo
+principal, cuántos hilos contiene, los que contiene <em>miGrupo</em>...
+
+<h2>Futuros</h2>
+
+
+<h2><em>Thread Pool</em></h2>
+<p>En general, la tarea de crear hilos requiere que el SO dedique una serie de
+recursos que hacen que la operación sea muy costosa, especialmente en
+aplicaciones que creen muchos hilos con una vida corta. Por ello, en la
+práctica, las aplicaciones que deben ejecutar muchos hilos así, en lugar de
+crear un nuevo hilo cada vez que deban ejecutar una tarea, pueden utilizar un
+conjunto de hilos asociados de manera que, cuando la tarea deba ser ejecutada,
+ésta sea asignada a uno de esos hilos; cuando la tarea finaliza, en lugar de
+liberar los recursos del hilo, éste queda ocioso a la espera de que una nueva
+tarea deba ser ejecutada. Análogamente, si debe ejecutar más tareas que hilos
+tiene asociados (y todos están ocupados), puede utilizar algún tipo de cola o
+similar en la que esas tareas esperen hasta la liberación de algún hilo.
+<p>Este tipo de estructuras se utiliza ampliamente en servidores multihilo.
+Cada vez que se establece una conexión con el servidor a través de la red, la
+misma se asocia a una tarea que es añadida al <a target=_blank
+href=https://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html>Thread Pool</a>
+y los hilos del mismo procesarán las conexiones de forma concurrente.
+<p>En general, no hace falta implementar un <em>Thread Pool</em> propio ya que
+Java proporciona varios en el paquete de concurrencia, como el
+<em>Fork Join</em>, con el que ya hemos trabajado.
+<p>La manera de utilizar un <i>thread pool</i> es a través de un
+<a target=_blank href=https://docs.oracle.com/javase/tutorial/essential/concurrency/exinter.html>ejecutor</a>.
+El ejecutor es un interfaz, <a class=clase target=_blank
+href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/Executor.html>Executor</a>,
+de alto nivel para la gestión de los <i>thread pools</i>; de alguna manera, el
+ejecutor es la implementación Java de los <i>thread pools</i>. Básicamente,
+contiene un método para ejecutar una tarea, en lugar de tener que iniciar un
+hilo. De este modo, si lo que haríamos normalmente es crear un hilo a partir
+de un objeto perteneciente a una clase que implementa
+<span class=clase>Runnable</span> y ejecutarlo invocando el método
+<span class=metodo>start</span>(), con el ejecutor invocaremos el método
+<a class=metodo target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/Executor.html#execute(java.lang.Runnable)>execute</a>(),
+al que pasaremos como parámetro ese objeto de una clase Runnable.
+<p>Dicho de otro modo, donde, pro ejemplo,  hubiéramos escrito:
+<pre class=code>
+Thread t = new Thread(new Runnable());
+t.start();
+</pre>
+<p>Ahora pondremos:
+<pre class=code>
+Executor ejecutor = algunExecutor;
+ejecutor.execute(new Runnable());
+ejecutor.execute(new Runnable());
+</pre>
 
 
 			</section>
