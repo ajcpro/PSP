@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-08-12">
-		<meta name=modified content="2021-09-04">
+		<meta name=modified content="2021-09-13">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -76,7 +76,7 @@ que quieren escribir en la salida estándar, lo que nos permitirá
 identificarlos. Podemos obtener su identificador con
 <span class=metodo>getName</span>(), que no aparece en el código; o podríamos
 usar <span class=metodo>getId</span>(), que nos proporciona su <em>id</em>, un
-número entero. Hemos de tener en cuenta, no obstante, que ese <em>id</em> es
+número entero. Hemos de tener en cuenta, sin embargo, que ese <em>id</em> es
 asignado cuando comienza la ejecución del hilo y puede ser reutilizado para la
 ejecución de un hilo diferente.
 <p>Otro método a destacar es <span class=metodo>sleep</span>(). Podemos
@@ -87,6 +87,7 @@ parámetro, en milisegundos. Hay que tener en cuenta que puede lanzar una
 excepción <span class=clase>InterruptedException</span>, por lo que va en el
 bloque <i>try-catch</i>. Puede ser provocado con el método
 <span class=metodo>interrupt</span>().
+
 <h2>Creación de hilos</h2>
 <p>Existen dos formas de crear un nuevo hilo:
 <ul>
@@ -119,6 +120,7 @@ hilo que lo invoca.
 	<li>Implementación anónima de Runnable
 	<li>Lambda de Runnable
 </ol>
+
 <h3>Subclase de Thread</h3>
 <pre class=code>
 class MiHilo extends Thread {
@@ -157,6 +159,7 @@ utilizar <span class=metodo>setName</span>(), podemos hacerlo pasándolo como
 parámetro del constructor.
 <p>Por último, recordar que <b>el modelo preferido para crear hilos no es
 éste</b>: es el siguiente.
+
 <h3>Implementando Runnable</h3>
 <pre class=code>
 class MiHilo implements Runnable {
@@ -247,6 +250,7 @@ S.O. y solo pueden encontrarse en uno de ellos en un momento dado.
 	<dd>El método <span class=metodo>run</span>() ha finalizado su
 	ejecución (sea normalmente o por una excepción).</dd>
 </dl>
+
 <h3>Ejemplo</h3>
 <p>Veamos, en un ejemplo, cómo creamos un nuevo hilo:
 <pre class=code>
@@ -322,6 +326,7 @@ public static void main ( String[] args ) throws InterruptedException {
 <span class=metodo>join</span>() cuando otro hilo ha interrumpido a éste.
 Dado que este programa no define otro hilo que pueda causar la interrupción,
 resulta innecesario capturarla.
+
 <h2>Prioridad</h2>
 <p>¿Cuál es el hilo preferido para la ejecución, en caso de existir muchos
 hilos? ¿Cómo decide el planificador cuál se ejecuta de aquellos en estado
@@ -413,6 +418,7 @@ principal, cuántos hilos contiene, los que contiene <em>miGrupo</em>...
 
 <h2>Futuros</h2>
 
+Por completar.
 
 <h2><em>Thread Pool</em></h2>
 <p>En general, la tarea de crear hilos requiere que el SO dedique una serie de
@@ -447,7 +453,7 @@ de un objeto perteneciente a una clase que implementa
 <span class=metodo>start</span>(), con el ejecutor invocaremos el método
 <a class=metodo target=_blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/Executor.html#execute(java.lang.Runnable)>execute</a>(),
 al que pasaremos como parámetro ese objeto de una clase Runnable.
-<p>Dicho de otro modo, donde, pro ejemplo,  hubiéramos escrito:
+<p>Dicho de otro modo, donde, por ejemplo,  hubiéramos escrito:
 <pre class=code>
 Thread t = new Thread(new Runnable());
 t.start();
@@ -459,12 +465,123 @@ ejecutor.execute(new Runnable());
 ejecutor.execute(new Runnable());
 </pre>
 
+<h3>Servicio de ejecución</h3>
+<p>El interfaz <a class=clase target=_blank
+href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/ExecutorService.html>ExecutorService</a>
+es un mecanismo de ejecución asíncrona que puede ejecutar tareas en segundo
+plano de forma concurrente, proporcionando métodos para gestionar la
+terminación o producir futuros.
+<p>Para crearlo, podemos utilizar uno de los definidos en la clase
+<a class=clase target=blank href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/Executors.html>Executors</a>,
+cualquiera de los métodos que comienzan por <em>new</em>, según el tipo de
+<i>Thread Pool</i> que mejor se adapte a nuestro problema. Para ejecutar
+tareas, como <span class=clase>Executor</span> es un superinterfaz de éste,
+podemos seguir utilizando el método <span class=metodo>execute</span>(); pero,
+además, proporciona un método <span class=metodo>submit</span>() al que
+podemos pasar objetos tanto <span class=clase>Runnable</span> como
+<span class=clase>Callable</span>, dando así opción a recuperar el valor
+devuelto en un futuro. Una vez que todas las tareas hayan finalizado debemos
+detener el ejecutor de manera ordenada, recurriendo al método
+<span class=metodo>shutdown</span>(). De no hacerlo así, los hilos seguirán
+<em>vivos</em> y nuestro programa no terminará su ejecución.
+
+<h4>Ejemplos</h4>
+<pre class=code>
+public static void main(String[] args) {
+    final int NUM_HILOS = 8;
+
+    ExecutorService ejecutor =
+                    Executors.newFixedThreadPool(NUM_HILOS);
+
+    for ( int i = 0; i < NUM_HILOS * 2; i++ )
+        ejecutor.execute(() -> {
+            System.out.println("Soy el hilo: "
+                        + Thread.currentThread().getName());
+            });
+
+        System.out.println("Programa principal esperando");
+
+        ejecutor.shutdown();
+
+        System.out.println("Ejcutor finalizado");
+}
+</pre>
+<p>En el ejemplo anterior podemos ver cómo creamos el <em>Thread Pool</em>:
+utilizamos <span class=clase>newFixedThreadPool</span>(), que genera un
+conjunto fijo de hilos; en este caso, lo hacemos de 8 hilos. A continuación,
+creamos el doble de tareas que hilos tenemos y delegamos su control al
+ejecutor. El programa principal imprime un mensaje y queda en suspenso hasta
+que el ejecutor finalice su actividad; es decir, hasta que todas las tareas
+hayan finalizado y terminen los hilos. Finalmente, imprime el mensaje de
+finalización.
+<p>El programa generará un mensaje para cada una de las tareas pudiendo
+observar como, para más de una, el nombre del hilo en que se ejecuta, debido
+a que hemos usado <span class=metodo>getName()</span>, se repite.
+<pre class=code>
+public static void main(String[] args) {
+    ExecutorService ejecutor = Executors.newSingleThreadExecutor();
+
+    ArrayList<Callable<String>> tareas = new ArrayList();
+    for ( int i = 0; i < 3; i++ ) {
+        final int num = i;
+        tareas.add(() -> "Tarea" + num );
+    }
+
+    ArrayList<Future<String>> salida =
+      (ArrayList<Future<String>>) ejecutor.invokeAll(tareas);
+
+    try {
+        for ( Future<String> f: salida )
+            System.out.println(f.get());
+    } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+    }
+
+    ejecutor.shutdown();
+}
+</pre>
+<p>En este segundo ejemplo utilizamos
+<span class=clase>newSingleThreadExecutor</span>(), que utiliza un único hilo.
+A continuación, creamos una colección de objetos que implementan el interfaz
+<span class=clase>Callable</span> y asignamos una tarea cuya única función es
+devolver la cadena de texto <em>Tarea</em>, seguida del número de tarea. Para
+poder hacer asíncrono el resultado, definimos una nueva colección, esta vez de
+<span class=clase>Future</span>, y le asignamos la salida del método
+<span class=metodo>invokeAll</span>, que ya conocíamos del
+<span class=clase>ForkJoinPool</span>. Se hace el <i>cast</i> porque devuelve
+una lista genérica. Hemos creado una constante intermedia <em>num</em> para
+utilizarla en la función lambda, en la que no podemos usar <em>i</em>
+directamente. Por último, con el método <span class=metodo>get</span>()
+esperaremos a que el valor del futuro esté disponible e imprimiremos su
+contenido.
+<p>Hemos de tener en cuenta que la tarea puede provocar una excepción y que el
+futuro no puede determinar si ha finalizado con éxito o no.
+<p>En algunas ocasiones nos puede interesar, como ya vimos, el no determinismo
+benigno, en el que cualquier solución es buena. Para ellos disponemos del
+método <span class=metodo>invokeAny</span>(): en este caso, solo devolverá un
+valor, en caso de que una tarea finalice correctamente, cancelando la
+ejecución del resto de tareas.
+
+
+
+
 
 			</section>
-			<section id=>
+			<section id=Sincro>
 				<header>
-					<h1 id=></h1>
+					<h1 id=sincro>Sincronización</h1>
 				</header>
+
+<h2>Introducción</h2>
+
+<h2>Barreras y fáseres</h2>
+
+<h2>Cerrojos estructurados</h2>
+
+<h2>Cerrojos no estructurados</h2>
+
+<h2>Modelo de actor</h2>
+			</section>
 			<footer>
 <nav class=pie>
         <a class=previo href=04_progpar.html>Programación paralela</a>
