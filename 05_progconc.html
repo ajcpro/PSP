@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-08-12">
-		<meta name=modified content="2021-09-13">
+		<meta name=modified content="2021-09-14">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -17,6 +17,8 @@
 			<nav class=toc>
 				<ol>
 					<li><a href=#hilos>Hilos</a></li>
+					<li><a href=#futuros>Futuros</a></li>
+					<li><a href=#threadpool><em>Thread Pool</em></a></li>
 				</ol> 
 			</nav>
 			<section id=Hilos>
@@ -416,11 +418,96 @@ el programa no finalizaría.
 <p>Podéis ampliar este programa para ver el grupo al que pertenece el hilo
 principal, cuántos hilos contiene, los que contiene <em>miGrupo</em>...
 
-<h2>Futuros</h2>
+                        <section id=Futuros>
+                                <header>
+                                        <h1 id=futuros>Futuros</h1>
+                                </header>
 
-Por completar.
+<p>Imaginemos que tenemos un valor <em>A</em> que se obtiene de aplicar una
+función <em>F</em> a otro valor <em>B</em>; y dos valores, <em>C</em> y
+<em>D</em>, que se obtienen, respectivamente, de aplicar las funciones
+<em>G</em> y <em>H</em> a <em></em>A.
+<br><span class=code>A = F(B)</span>
+<br><span class=code>C = G(A)</span>
+<br><span class=code>D = H(A)</span>
+<br>Esto es un caso típico de un programa cualquiera, en el que invocamos
+distintos métodos (que devuelven un resultado) para asignar valores a las
+variables.
+<p>Vemos como la invocación a <em>G</em> y <em>H</em> puede ser realizada en
+paralelo ya que ambas dependen de <em>A</em>, pero no dependen una de la otra.
+La única condición para que puedan ejecutarse reside en que <em>A</em> esté
+disponible. Y eso es lo que queremos, que puedan ejecutarse en cualquier
+orden: vamos a ver cómo podemos expresar ese paralelismo. Deseamos crear una
+tarea asíncrona con el método <em>F</em>, pero vamos a llamarla <b>futuro</b>.
+Para lo que sería la variable <em>A</em>, indicamos una <em><b>futuro de
+A</b></em>, <em>FA</em>, a la que asignamos el resultado del futuro de
+<em>F(B)</em>. Es decir, creamos un <em><b>futuro de la función</b></em> y el
+resultado es algo denominado un <b>objeto futuro</b>.
+<br><span class=code>FA = FUTURE{F(B)}</span>
+<br>A continuación queremos usar el valor de <em>A</em>, por lo que, cuando
+invoquemos el futuro de <em>G(A)</em>, lo haremos a través del método
+<span class=metodo>get</span> del <em>futuro de A</em>:
+<span class=code style="margin-left: 0">FA.get()</span>.
+<br><span class=code>FC = FUTURE{G(FA.get())}</span>
+<br><span class=code>FD = FUTURE{H(FA.get())}</span>
 
-<h2><em>Thread Pool</em></h2>
+<p>¿Qué son entonces ese objeto futuro y el método
+<span class=metodo>get</span>? El futuro es un manejador para el objeto y, en
+el mismo, estará el valor final de <em>A</em>.
+Por lo que la diferencia entre <em>A</em> y <em>FA</em>, es que <em>FA</em> es
+un <b>envoltorio</b> (<b><i>wrapper</i></b>) para <em>A</em>, y ese valor es el
+devuelto. Así que cuando hacemos el <em>futuro de F(A)</em> es equivalente a
+que lancemos una tarea asíncrona y el programa continúe con la siguiente
+instrucción: no se produce un bloqueo cuando se crea el futuro. Ahora bien,
+cuando se necesita el valor de <em>A</em>, cuando hacemos el <em>FA.get()</em>,
+es entonces cuando se producirá un bloqueo u operación de espera (<i>wait</i>)
+hasta que el valor de <em>A</em> esté disponible.
+<div class=image id=img_05_02 style="width:80%;margin-left:10%">
+	<img src=imagenes/05_02_futuro.png style="width:15em"
+	     alt="Representación de un futuro, que, en este caso, puede ser
+		  considerado com un envoltorio o contenedor en el que se
+		  depositará el valor esperado">
+	<p class=caption>Representación de un futuro<br>
+</div>
+<p>Eso significa que todas las tareas pueden ejecutarse en paralelo y no se
+producirán errores porque <em>G</em> no se ejecutará mientras el valor de
+<em>A</em> no esté disponible. Y también el cálculo de <em>D</em> puede
+realizarse en paralelo.
+<p>Fácilmente podemos deducir que podríamos aplicar este método a
+nuestro ejemplo de la suma de elementos de un vector, si utilizamos dos
+futuros, uno para el cálculo de la suma de los elementos de la parte
+izquierda y otro para la suma de los elementos de la parte derecha; y
+aplicamos el método <span class=metodo>get</span> para obtener la suma final.
+Como vimos, el <i>Fork-Join framework</i> ya nos proporciona esta posibilidad:
+podemos asimilar el <span class=metodo>fork</span> con el futuro de la suma y
+el método <span class=metodo>get</span> con <span class=metodo>join</span>.
+<p>Y en general, puede ser aplicado a cualquier programa, haciendo que sus
+métodos se conviertan en tareas asíncronas asociadas a un futuro.
+
+<h2><i>Callable</i></h2>
+<p><a class=clase target=_blank
+      href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/Callable.html>Callable</a>
+es un interfaz que, como <span class=clase>Runnable</span>, representa una
+tarea que puede ser ejecutada en un hilo o en un <i>thread</i> pool. Ambos son
+interfaces funcionales y la diferencia entre uno y otro reside en que
+<span class=clase>Callable</span> define un método
+<span class=metodo>call</span>(), en lugar de <span class=metodo>run</span>().
+Lo que distingue a call() es que puede devolver un valor y/o lanzar una excepción, mientras que run() no.
+<p>La idea, como veremos más adelante, reside en que el resultado del método
+<span class=metodo>call</span>() lo asignaremos a un objeto que cumpla con el
+interfaz <a class=clase target=_blank
+href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/Future.html>Future</a>,
+permitiendo así la ejecución asíncrona.
+
+
+                        </section>
+
+			<section id=ThreadPool>
+                                <header>
+                                        <h1 id=threadpool><em>Thread Pool</em></h1>
+                                </header>
+
+
 <p>En general, la tarea de crear hilos requiere que el SO dedique una serie de
 recursos que hacen que la operación sea muy costosa, especialmente en
 aplicaciones que creen muchos hilos con una vida corta. Por ello, en la
@@ -493,8 +580,8 @@ public static void main(String[] args) {
     ExecutorService ejecutor =
                     Executors.newFixedThreadPool(NUM_HILOS);
 
-    for ( int i = 0; i < NUM_HILOS * 2; i++ )
-        ejecutor.execute(() -> {
+    for ( int i = 0; i &lt; NUM_HILOS * 2; i++ )
+        ejecutor.execute(() -&gt; {
             System.out.println("Soy el hilo: "
                         + Thread.currentThread().getName());
             });
@@ -521,17 +608,17 @@ a que hemos usado <span class=metodo>getName()</span>, se repite.
 public static void main(String[] args) {
     ExecutorService ejecutor = Executors.newSingleThreadExecutor();
 
-    ArrayList<Callable<String>> tareas = new ArrayList();
-    for ( int i = 0; i < 3; i++ ) {
+    ArrayList&lt;Callable&lt;String&gt;&gt; tareas = new ArrayList();
+    for ( int i = 0; i &lt; 3; i++ ) {
         final int num = i;
-        tareas.add(() -> "Tarea" + num );
+        tareas.add(() -&gt; "Tarea" + num );
     }
 
-    ArrayList<Future<String>> salida =
-      (ArrayList<Future<String>>) ejecutor.invokeAll(tareas);
+    ArrayList&lt;Future&lt;String&gt;&gt; salida =
+      (ArrayList&lt;Future&lt;String&gt;&gt;) ejecutor.invokeAll(tareas);
 
     try {
-        for ( Future<String> f: salida )
+        for ( Future&lt;String&gt; f: salida )
             System.out.println(f.get());
     } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
@@ -562,26 +649,40 @@ método <span class=metodo>invokeAny</span>(): en este caso, solo devolverá un
 valor, en caso de que una tarea finalice correctamente, cancelando la
 ejecución del resto de tareas.
 
-
-
-
-
 			</section>
+
 			<section id=Sincro>
 				<header>
-					<h1 id=sincro>Sincronización</h1>
+					<h1 id=sincro>Comunicación entre procesos</h1>
 				</header>
 
-<h2>Introducción</h2>
 
-<h2>Barreras y fáseres</h2>
-
-<h2>Cerrojos estructurados</h2>
-
-<h2>Cerrojos no estructurados</h2>
-
-<h2>Modelo de actor</h2>
 			</section>
+
+			<section id=Barreras>
+				<header>
+					<h1 id=barreras>Barreras y fáseres</h1>
+				</header>
+
+
+			</section>
+
+			<section id=Cerrojos>
+				<header>
+					<h1 id=cerrojos>Cerrojos</h1>
+				</header>
+
+
+			</section>
+
+			<section id=Actor>
+				<header>
+					<h1 id=actor>Modelo de actor</h1>
+				</header>
+
+
+			</section>
+
 			<footer>
 <nav class=pie>
         <a class=previo href=04_progpar.html>Programación paralela</a>
