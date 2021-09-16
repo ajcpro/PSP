@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-08-12">
-		<meta name=modified content="2021-09-14">
+		<meta name=modified content="2021-09-16">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -17,8 +17,9 @@
 			<nav class=toc>
 				<ol>
 					<li><a href=#hilos>Hilos</a></li>
-					<li><a href=#futuros>Futuros</a></li>
 					<li><a href=#threadpool><em>Thread Pool</em></a></li>
+					<li><a href=#futuros>Futuros</a></li>
+					<li><a href=#barreras>Barreras</a></li>
 				</ol> 
 			</nav>
 			<section id=Hilos>
@@ -418,89 +419,6 @@ el programa no finalizaría.
 <p>Podéis ampliar este programa para ver el grupo al que pertenece el hilo
 principal, cuántos hilos contiene, los que contiene <em>miGrupo</em>...
 
-                        <section id=Futuros>
-                                <header>
-                                        <h1 id=futuros>Futuros</h1>
-                                </header>
-
-<p>Imaginemos que tenemos un valor <em>A</em> que se obtiene de aplicar una
-función <em>F</em> a otro valor <em>B</em>; y dos valores, <em>C</em> y
-<em>D</em>, que se obtienen, respectivamente, de aplicar las funciones
-<em>G</em> y <em>H</em> a <em></em>A.
-<br><span class=code>A = F(B)</span>
-<br><span class=code>C = G(A)</span>
-<br><span class=code>D = H(A)</span>
-<br>Esto es un caso típico de un programa cualquiera, en el que invocamos
-distintos métodos (que devuelven un resultado) para asignar valores a las
-variables.
-<p>Vemos como la invocación a <em>G</em> y <em>H</em> puede ser realizada en
-paralelo ya que ambas dependen de <em>A</em>, pero no dependen una de la otra.
-La única condición para que puedan ejecutarse reside en que <em>A</em> esté
-disponible. Y eso es lo que queremos, que puedan ejecutarse en cualquier
-orden: vamos a ver cómo podemos expresar ese paralelismo. Deseamos crear una
-tarea asíncrona con el método <em>F</em>, pero vamos a llamarla <b>futuro</b>.
-Para lo que sería la variable <em>A</em>, indicamos una <em><b>futuro de
-A</b></em>, <em>FA</em>, a la que asignamos el resultado del futuro de
-<em>F(B)</em>. Es decir, creamos un <em><b>futuro de la función</b></em> y el
-resultado es algo denominado un <b>objeto futuro</b>.
-<br><span class=code>FA = FUTURE{F(B)}</span>
-<br>A continuación queremos usar el valor de <em>A</em>, por lo que, cuando
-invoquemos el futuro de <em>G(A)</em>, lo haremos a través del método
-<span class=metodo>get</span> del <em>futuro de A</em>:
-<span class=code style="margin-left: 0">FA.get()</span>.
-<br><span class=code>FC = FUTURE{G(FA.get())}</span>
-<br><span class=code>FD = FUTURE{H(FA.get())}</span>
-
-<p>¿Qué son entonces ese objeto futuro y el método
-<span class=metodo>get</span>? El futuro es un manejador para el objeto y, en
-el mismo, estará el valor final de <em>A</em>.
-Por lo que la diferencia entre <em>A</em> y <em>FA</em>, es que <em>FA</em> es
-un <b>envoltorio</b> (<b><i>wrapper</i></b>) para <em>A</em>, y ese valor es el
-devuelto. Así que cuando hacemos el <em>futuro de F(A)</em> es equivalente a
-que lancemos una tarea asíncrona y el programa continúe con la siguiente
-instrucción: no se produce un bloqueo cuando se crea el futuro. Ahora bien,
-cuando se necesita el valor de <em>A</em>, cuando hacemos el <em>FA.get()</em>,
-es entonces cuando se producirá un bloqueo u operación de espera (<i>wait</i>)
-hasta que el valor de <em>A</em> esté disponible.
-<div class=image id=img_05_02 style="width:80%;margin-left:10%">
-	<img src=imagenes/05_02_futuro.png style="width:15em"
-	     alt="Representación de un futuro, que, en este caso, puede ser
-		  considerado com un envoltorio o contenedor en el que se
-		  depositará el valor esperado">
-	<p class=caption>Representación de un futuro<br>
-</div>
-<p>Eso significa que todas las tareas pueden ejecutarse en paralelo y no se
-producirán errores porque <em>G</em> no se ejecutará mientras el valor de
-<em>A</em> no esté disponible. Y también el cálculo de <em>D</em> puede
-realizarse en paralelo.
-<p>Fácilmente podemos deducir que podríamos aplicar este método a
-nuestro ejemplo de la suma de elementos de un vector, si utilizamos dos
-futuros, uno para el cálculo de la suma de los elementos de la parte
-izquierda y otro para la suma de los elementos de la parte derecha; y
-aplicamos el método <span class=metodo>get</span> para obtener la suma final.
-Como vimos, el <i>Fork-Join framework</i> ya nos proporciona esta posibilidad:
-podemos asimilar el <span class=metodo>fork</span> con el futuro de la suma y
-el método <span class=metodo>get</span> con <span class=metodo>join</span>.
-<p>Y en general, puede ser aplicado a cualquier programa, haciendo que sus
-métodos se conviertan en tareas asíncronas asociadas a un futuro.
-
-<h2><i>Callable</i></h2>
-<p><a class=clase target=_blank
-      href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/Callable.html>Callable</a>
-es un interfaz que, como <span class=clase>Runnable</span>, representa una
-tarea que puede ser ejecutada en un hilo o en un <i>thread</i> pool. Ambos son
-interfaces funcionales y la diferencia entre uno y otro reside en que
-<span class=clase>Callable</span> define un método
-<span class=metodo>call</span>(), en lugar de <span class=metodo>run</span>().
-Lo que distingue a call() es que puede devolver un valor y/o lanzar una excepción, mientras que run() no.
-<p>La idea, como veremos más adelante, reside en que el resultado del método
-<span class=metodo>call</span>() lo asignaremos a un objeto que cumpla con el
-interfaz <a class=clase target=_blank
-href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/Future.html>Future</a>,
-permitiendo así la ejecución asíncrona.
-
-
-                        </section>
 
 			<section id=ThreadPool>
                                 <header>
@@ -604,6 +522,91 @@ finalización.
 <p>El programa generará un mensaje para cada una de las tareas pudiendo
 observar como, para más de una, el nombre del hilo en que se ejecuta, debido
 a que hemos usado <span class=metodo>getName()</span>, se repite.
+
+                        </section>
+                        <section id=Futuros>
+                                <header>
+                                        <h1 id=futuros>Futuros</h1>
+                                </header>
+
+<p>Imaginemos que tenemos un valor <em>A</em> que se obtiene de aplicar una
+función <em>F</em> a otro valor <em>B</em>; y dos valores, <em>C</em> y
+<em>D</em>, que se obtienen, respectivamente, de aplicar las funciones
+<em>G</em> y <em>H</em> a <em></em>A.
+<br><span class=code>A = F(B)</span>
+<br><span class=code>C = G(A)</span>
+<br><span class=code>D = H(A)</span>
+<br>Esto es un caso típico de un programa cualquiera, en el que invocamos
+distintos métodos (que devuelven un resultado) para asignar valores a las
+variables.
+<p>Vemos como la invocación a <em>G</em> y <em>H</em> puede ser realizada en
+paralelo ya que ambas dependen de <em>A</em>, pero no dependen una de la otra.
+La única condición para que puedan ejecutarse reside en que <em>A</em> esté
+disponible. Y eso es lo que queremos, que puedan ejecutarse en cualquier
+orden: vamos a ver cómo podemos expresar ese paralelismo. Deseamos crear una
+tarea asíncrona con el método <em>F</em>, pero vamos a llamarla <b>futuro</b>.
+Para lo que sería la variable <em>A</em>, indicamos una <em><b>futuro de
+A</b></em>, <em>FA</em>, a la que asignamos el resultado del futuro de
+<em>F(B)</em>. Es decir, creamos un <em><b>futuro de la función</b></em> y el
+resultado es algo denominado un <b>objeto futuro</b>.
+<br><span class=code>FA = FUTURE{F(B)}</span>
+<br>A continuación queremos usar el valor de <em>A</em>, por lo que, cuando
+invoquemos el futuro de <em>G(A)</em>, lo haremos a través del método
+<span class=metodo>get</span> del <em>futuro de A</em>:
+<span class=code style="margin-left: 0">FA.get()</span>.
+<br><span class=code>FC = FUTURE{G(FA.get())}</span>
+<br><span class=code>FD = FUTURE{H(FA.get())}</span>
+
+<p>¿Qué son entonces ese objeto futuro y el método
+<span class=metodo>get</span>? El futuro es un manejador para el objeto y, en
+el mismo, estará el valor final de <em>A</em>.
+Por lo que la diferencia entre <em>A</em> y <em>FA</em>, es que <em>FA</em> es
+un <b>envoltorio</b> (<b><i>wrapper</i></b>) para <em>A</em>, y ese valor es el
+devuelto. Así que cuando hacemos el <em>futuro de F(A)</em> es equivalente a
+que lancemos una tarea asíncrona y el programa continúe con la siguiente
+instrucción: no se produce un bloqueo cuando se crea el futuro. Ahora bien,
+cuando se necesita el valor de <em>A</em>, cuando hacemos el <em>FA.get()</em>,
+es entonces cuando se producirá un bloqueo u operación de espera (<i>wait</i>)
+hasta que el valor de <em>A</em> esté disponible.
+<div class=image id=img_05_02 style="width:80%;margin-left:10%">
+	<img src=imagenes/05_02_futuro.png style="width:15em"
+	     alt="Representación de un futuro, que, en este caso, puede ser
+		  considerado com un envoltorio o contenedor en el que se
+		  depositará el valor esperado">
+	<p class=caption>Representación de un futuro<br>
+</div>
+<p>Eso significa que todas las tareas pueden ejecutarse en paralelo y no se
+producirán errores porque <em>G</em> no se ejecutará mientras el valor de
+<em>A</em> no esté disponible. Y también el cálculo de <em>D</em> puede
+realizarse en paralelo.
+<p>Fácilmente podemos deducir que podríamos aplicar este método a
+nuestro ejemplo de la suma de elementos de un vector, si utilizamos dos
+futuros, uno para el cálculo de la suma de los elementos de la parte
+izquierda y otro para la suma de los elementos de la parte derecha; y
+aplicamos el método <span class=metodo>get</span> para obtener la suma final.
+Como vimos, el <i>Fork-Join framework</i> ya nos proporciona esta posibilidad:
+podemos asimilar el <span class=metodo>fork</span> con el futuro de la suma y
+el método <span class=metodo>get</span> con <span class=metodo>join</span>.
+<p>Y en general, puede ser aplicado a cualquier programa, haciendo que sus
+métodos se conviertan en tareas asíncronas asociadas a un futuro.
+
+<h2><i>Callable</i></h2>
+<p><a class=clase target=_blank
+      href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/Callable.html>Callable</a>
+es un interfaz que, como <span class=clase>Runnable</span>, representa una
+tarea que puede ser ejecutada en un hilo o en un <i>thread</i> pool. Ambos son
+interfaces funcionales y la diferencia entre uno y otro reside en que
+<span class=clase>Callable</span> define un método
+<span class=metodo>call</span>(), en lugar de <span class=metodo>run</span>().
+Lo que distingue a call() es que puede devolver un valor y/o lanzar una
+excepción, mientras que <span class=metodo>run</span>() no.
+<p>La idea, como veremos más adelante, reside en que el resultado del método
+<span class=metodo>call</span>() lo asignaremos a un objeto que cumpla con el
+interfaz <a class=clase target=_blank
+href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/Future.html>Future</a>,
+permitiendo así la ejecución asíncrona.
+
+
 <pre class=code>
 public static void main(String[] args) {
     ExecutorService ejecutor = Executors.newSingleThreadExecutor();
@@ -627,7 +630,7 @@ public static void main(String[] args) {
     ejecutor.shutdown();
 }
 </pre>
-<p>En este segundo ejemplo utilizamos
+<p>En este ejemplo utilizamos
 <span class=clase>newSingleThreadExecutor</span>(), que utiliza un único hilo.
 A continuación, creamos una colección de objetos que implementan el interfaz
 <span class=clase>Callable</span> y asignamos una tarea cuya única función es
@@ -649,6 +652,7 @@ método <span class=metodo>invokeAny</span>(): en este caso, solo devolverá un
 valor, en caso de que una tarea finalice correctamente, cancelando la
 ejecución del resto de tareas.
 
+<!-- Hay que añadir FutureTask -->
 			</section>
 
 			<section id=Sincro>
@@ -661,8 +665,160 @@ ejecución del resto de tareas.
 
 			<section id=Barreras>
 				<header>
-					<h1 id=barreras>Barreras y fáseres</h1>
+					<h1 id=barreras>Barreras</h1>
 				</header>
+<p>Supongamos que tenemos un bucle como el siguiente:
+<pre class=code>
+forall ( i: [0:n] ) {
+	println("Hola " + i);
+	println("Adios " + i);
+}
+</pre>
+<p>es un forall que se ejecuta <em>n</em> veces y que imprime una sucesión de
+<em>hola</em> y <em>adios</em>, seguidos del número de iteración. Si en lugar
+de un <em>forall</em> fuera un <em>for</em> siempre veríamos <em>hola</em>
+seguido de <em>adios</em>, con números consecutivos del <em>0</em> al
+<em>n</em>.
+<p>¿Cómo se ejecutarán en paralelo? Como sabemos, es no determinista:
+diferentes ejecuciones proporcionarán resultados diferentes, imprimiendo las
+cadenas en distintos órdenes. Por ejemplo, podemos tener <em>hola 2</em>
+seguido de <em>hola 6</em>, seguido de <em>adios 2</em>, <em>hola 4</em>,
+<em>hola 5</em>, <em>adios 6</em>, <em>adios 5</em>, etc. Esto significa que
+hay múltiples resultados, en diferentes órdenes, pero con una restricción:
+que los <em>hola</em> y <em>adios</em> correspondientes al mismo número
+siempre deben ir en ese orden. O lo que es lo mismo, tendremos <em>hola 2</em>
+seguido de <em>adios 2</em>, <em>hola 4</em> seguido de <em>adios 4</em>, etc.
+Para cualquier otro caso, todas las permutaciones son correctas.
+<p>Pero supongamos que queremos añadir una nueva restricción: que todos los
+<em>hola</em> sean impresos antes que todos los <em>adios</em>. ¿Cómo
+podríamos modificar ese código para conseguir lo que buscamos? Una
+posibilidad sería crear un segundo bucle: tenemos un bucle para el
+<em>hola</em> y otro para el <em>adios</em>. Supongamos, sin embargo, que no
+es imprimir <em>hola</em> degido del número <em>i</em> de la iteración, sino
+que queremos realizar alguna operación con ello y es el resultado de dicha
+operación con lo que vamos a trabajar en la segunda parte (no imprimir
+<em>adios</em>). En ese caso, crear dos bucles no es una buena opción ya que
+habrá que hacer algo para comunicar el valor desde el primer bucle al segundo
+o realizar el cálculo nuevamente, lo que podría ser muy costoso.
+<p>Tenemos una construcción que denominamos <span class=palabra>BARRERA</span>
+y lo que hace es asegurarse de que, si tienes un bucle paralelo, todas las
+iteraciones alcanzan la <b>barrera</b> y ninguna de ellas continua su avance
+hasta que todas han llegado a ese punto. Así, al considerar las impresiones
+utilizando la barrera, puedes obtener cualquier permutación de hola pero ni un
+solo adios hasta que todos los hola hayan sido impresos. Y a continuación,
+cualquier permutación de adios.
+<pre class=code>
+forall ( i: [0:n] ) {
+	println("Hola " + i);
+	<span class=palabra>BARRERA</span>
+	println("Adios " + i);
+}
+</pre>
+<p>Recibe el nombre de barrera precisamente por eso: es un punto de espera
+para todas las tareas, que debe ser alcanzado por todas ellas antes de
+continuar con la siguiente <b>etapa</b> o <b>fase</b>. De hecho, nos referimos
+a ello como <b>fase 0</b>, <b>fase1</b>, etc. En definitiva, el mecanismo es
+un método de sincronización entre tareas (independientemente de que utilicemos
+un bucle como ejemplo).
+<p>En Java existe una clase denominada <a class=clase target=_blank 
+href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/CyclicBarrier.html>CyclicBarrier</a>, que implementa una barrera,
+utilizando el método <span class=metodo>await</span>() para la sincronización.
+En el siguiente ejemplo pasamos a su constructor el número de tareas que van a
+alcanzar la barrera; esto es necesario para que la barrera sepa a cuántos
+hilos debe esperar.
+
+<pre class=code>
+<b>CyclicBarrier barrera = new CyclicBarrier(10)</b>;
+
+for ( int i = 0; i &lt; 10; i++ ) {
+	final int num = i;
+	new Thread(() -&gt; {
+		System.out.println("Hola "  + num);
+		try { <b>barrera.await()</b>; } catch (Exception e) {}
+		System.out.println("Adios "  + num);
+	}).start();
+}
+</pre>
+
+<h3>Fáser</h3>
+<p>Volvamos a nuestro ejemplo anterior, en que imprimíamos <em>hola</em> y
+<em>adios</em>. Colocamos una barrera para que mostrara primero todos los
+<em>hola</em> y posteriormente todos los <em>adios</em>. Pero supongamos que
+yo quiero hacer algo entre medio, algo que debe ejecutarse después de su
+<em>hola</em> correspondiente pero puede realizarse de forma asíncrona con el
+resto de <em>hola</em> o, incluso, con los <em>adios</em>. Es decir, los
+<em>adios</em> deben ejecutarse siempre después de todos los <em>hola</em>
+pero, aunque ya hayan empezado a ejecutarse, todavía puede estar ejecutándose
+ese algo intermedio. Por ejemplo, modificamos el código añadiendo un mensaje
+de <em>Llegué</em>.
+<p>¿qué sucede si la barrera se coloca tras el nuevo mensaje?
+<pre class=code>
+forall ( i: [0:n] ) {
+	println("Hola " + i);
+	println("Llegué " + i);
+	<span class=modificado>BARRERA</span>
+	println("Adios " + i);
+}
+</pre>
+<p>En este caso, como podemos ver, nada cambia: algunos <em>llegué</em> pueden
+ir antes que otros <em>hola</em> pero ningún <em>adios</em> se ejecutará antes
+que un <em>hola</em>. Y daría igual si lo hubiéramos puesto después de la
+barrera:
+<pre class=code>
+forall ( i: [0:n] ) {
+	println("Hola " + i);
+	<span class=modificado>BARRERA</span>
+	println("Llegué " + i);
+	println("Adios " + i);
+}
+</pre>
+<p>se imprimirían todos los <em>hola</em> y, una vez terminados, la secuencia
+de <em>llegué</em> y <em>adios</em> sin un orden preestablecido. ¿Realmente
+sería igual? Es evidente que este ejemplo parece poco significativo pero, en
+un algoritmo real, el coste de ejecución de la barrera y el del cálculo que
+deba realizarse en ese punto se sumarían, lo que conlleva una sobrecarga
+innecesaria, que podríamos reducir fácilmente si ambos pudieran solaparse:
+<pre class=code>
+forall ( i: [0:n] ) {
+	println("Hola " + i);
+	<span class=modificado>BARRERA</span>?
+	println("Llegué " + i);
+	<span class=modificado>BARRERA</span>?
+	println("Adios " + i);
+}
+</pre>
+<p>Y ahí es precisamente donde los <span class=tooltip><b>fáseres</b>
+<span class=tooltiptext>Traducción libre que el autor ha dado al término
+	<i>phaser</i> al desconocer otro y no haberlo encontrado en la red,
+	construyendo el futuro como el de <em>láser</em> </span></span> tienen
+	su relevancia. Un <b>fáser</b> es un objeto que, como la barrera,
+divide un programa en etapas o fases. En este caso, tenemos dos métodos:
+<em>llegada</em> y <em>espera y avanza</em>. ¡Y eso es la barrera: llega,
+espera y avanza! Pero lo interesante es que la hemos dividido en dos partes:
+la parte de <em>llegada</em>, en la que dice que ya ha finalizado la fase que
+todos deben finalizar; y la de <em>espera y avance</em>, en la que la tarea
+esperará a que todas las demás hayan finalizado antes de proseguir.
+<pre class=code>
+forall ( i: [0:n] ) {
+	println("Hola " + i);
+	<span class=palabra>LLEGADA</span>
+	println("Llegué " + i);
+	<span class=palabra>ESPERAyAVANZA</span>
+	println("Adios " + i);
+}
+</pre>
+<p>Entonces, ¿qué nos proporciona a nosotros en nuestro algoritmo? Después del
+<em>hola</em>, colocamos la llegada, con lo que estamos informando de que
+hemos hecho ya el <em>hola</em>. Tras el mismo no nos detenemos, pudiendo
+imprimir el <em>llegué</em> pero, a continuación, esperamos a que todos los
+demás <em>hola</em> hayan sido impresos, es decir, que no continuaremos
+imprimiendo <em>adios</em> hasta que todos los <em>hola</em> hayan finalizado,
+pero lo haremos una vez suceda, aunque otros hilos aún no hayan impreso su
+<em>llegué</em>.
+<p>Notad que ahora, en un programa que usara esta técnica, el costo del camino
+se habría reducido al haber podido ejecutar en paralelo el costo de la barrera
+y de la parte de la tarea que se realiza localmente.
+
 
 
 			</section>
