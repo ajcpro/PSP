@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-08-12">
-		<meta name=modified content="2021-09-16">
+		<meta name=modified content="2021-09-17">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -483,9 +483,8 @@ cualquiera de los métodos que comienzan por <em>new</em>, según el tipo de
 tareas, como <span class=clase>Executor</span> es un superinterfaz de éste,
 podemos seguir utilizando el método <span class=metodo>execute</span>(); pero,
 además, proporciona un método <span class=metodo>submit</span>() al que
-podemos pasar objetos tanto <span class=clase>Runnable</span> como
-<span class=clase>Callable</span>, dando así opción a recuperar el valor
-devuelto en un futuro. Una vez que todas las tareas hayan finalizado debemos
+podemos pasar objetos <span class=clase>Runnable</span>.
+Una vez que todas las tareas hayan finalizado debemos
 detener el ejecutor de manera ordenada, recurriendo al método
 <span class=metodo>shutdown</span>(). De no hacerlo así, los hilos seguirán
 <em>vivos</em> y nuestro programa no terminará su ejecución.
@@ -600,7 +599,7 @@ interfaces funcionales y la diferencia entre uno y otro reside en que
 <span class=metodo>call</span>(), en lugar de <span class=metodo>run</span>().
 Lo que distingue a call() es que puede devolver un valor y/o lanzar una
 excepción, mientras que <span class=metodo>run</span>() no.
-<p>La idea, como veremos más adelante, reside en que el resultado del método
+<p>La idea reside en que el resultado del método
 <span class=metodo>call</span>() lo asignaremos a un objeto que cumpla con el
 interfaz <a class=clase target=_blank
 href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/Future.html>Future</a>,
@@ -667,6 +666,8 @@ ejecución del resto de tareas.
 				<header>
 					<h1 id=barreras>Barreras</h1>
 				</header>
+
+<h3>Barrera</h3>
 <p>Supongamos que tenemos un bucle como el siguiente:
 <pre class=code>
 forall ( i: [0:n] ) {
@@ -818,7 +819,31 @@ pero lo haremos una vez suceda, aunque otros hilos aún no hayan impreso su
 <p>Notad que ahora, en un programa que usara esta técnica, el costo del camino
 se habría reducido al haber podido ejecutar en paralelo el costo de la barrera
 y de la parte de la tarea que se realiza localmente.
-
+<p>Como antes, implementamos nuestro ejemplo en Java.
+<pre class=code>
+<b>Phaser ph = new Phaser(10)</b>;
+for ( int i = 0; i &lt; 10; i++ ) {
+	final int num = i;
+	new Thread(() -&gt; {
+		System.out.println("Hola "  + num);
+		int <b>fase = ph.arrive()</b>;
+		System.out.println("Llegué "  + num);
+		<b>ph.awaitAdvance(fase)</b>;
+		System.out.println("Adios "  + num);
+    }).start();
+}
+</pre>
+<p>En esta ocasión utilizamos la clase <a class=clase target=_blank
+href=https://docs.oracle.com/en/java/javase/14/docs/api/java.base/java/util/concurrent/Phaser.html>Phaser</a>
+que, entre otros métodos tiene el <span class=metodo>arrive</span>() y el
+<span class=metodo>awaitAdvance</span>(); también dispone de un método
+<span class=metodo>arriveAndAwaitAdvance</span>(), que puede ser utilizado
+como si de una barrera se tratara. Al igual que antes, al crearlo, indicamos
+cuántos hilos van a hacer uso del mismo. A diferencia del uso de la barrera,
+sin embargo, el método <span class=metodo>arrive()</span> no se bloquea y nos
+devuelve un valor de <b>fase</b> o etapa en la llegada. Ese número de fase es
+el que deberemos pasar a <span class=metodo>awaitAdvance()</span> para
+indicarle cuándo puede proseguir.
 
 
 			</section>
