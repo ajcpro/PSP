@@ -6,7 +6,7 @@
 		<meta charset=utf-8>
 		<meta name=author content="Antonio Cepero">
 		<meta name=created content="2021-08-12">
-		<meta name=modified content="2021-09-17">
+		<meta name=modified content="2021-09-18">
 		<link rel=stylesheet href="estilo.css">
 	</head>
 	<body>
@@ -741,7 +741,11 @@ for ( int i = 0; i &lt; 10; i++ ) {
 }
 </pre>
 
-<h3>Fáser</h3>
+
+<h3 class=tooltip>Fáser<span class=tooltiptext>Traducción libre que el autor
+ha dado al término <i>phaser</i>, al desconocer otro y no haber encontrado
+uno alternativo en la red.</span></h3>
+
 <p>Volvamos a nuestro ejemplo anterior, en que imprimíamos <em>hola</em> y
 <em>adios</em>. Colocamos una barrera para que mostrara primero todos los
 <em>hola</em> y posteriormente todos los <em>adios</em>. Pero supongamos que
@@ -788,10 +792,7 @@ forall ( i: [0:n] ) {
 	println("Adios " + i);
 }
 </pre>
-<p>Y ahí es precisamente donde los <span class=tooltip><b>fáseres</b>
-<span class=tooltiptext>Traducción libre que el autor ha dado al término
-	<i>phaser</i> al desconocer otro y no haberlo encontrado en la red,
-	construyendo el futuro como el de <em>láser</em> </span></span> tienen
+<p>Y ahí es precisamente donde los <b>fáseres</b> tienen
 	su relevancia. Un <b>fáser</b> es un objeto que, como la barrera,
 divide un programa en etapas o fases. En este caso, tenemos dos métodos:
 <em>llegada</em> y <em>espera y avanza</em>. ¡Y eso es la barrera: llega,
@@ -845,6 +846,83 @@ devuelve un valor de <b>fase</b> o etapa en la llegada. Ese número de fase es
 el que deberemos pasar a <span class=metodo>awaitAdvance()</span> para
 indicarle cuándo puede proseguir.
 
+<h3>Sincronización punto a punto</h3>
+<p>Vamos a ver ahora una aplicación muy interesante de los fáseres: la
+sincronización punto a punto.
+<p>Imaginemos que tenemos tres tareas, de manera que, en cada una de ellas se
+está haciendo algún trabajo. La <em>tarea 0</em> está calculando el valor de
+<em>X</em> como una función <em>A</em>, la <em>tarea 1</em> hace lo propio con
+<em>Y</em> y la <em>tarea 2</em> calcula <em>Z</em>. Posteriormente, estos
+valores van a ser utilizados por las tareas para otro cálculo; por ejemplo, la
+<em>tarea 0</em> utiliza <em>X</em> e <em>Y</em>, la <em>tarea 1</em> los tres
+valores y la <em>tarea 2</em> usa <em>Y</em> y <em>Z</em>:
+<br><span class=code>/* Tarea_0 */ X = A(); D(X, Y)</span>
+<br><span class=code>/* Tarea_1 */ Y = B(); E(X, Y, Z);</span>
+<br><span class=code>/* Tarea_2 */ Y = C(); F(Y, Z);</span>
+<p>Queremos que no existan condiciones de carrera pero, como los valores se
+calculan en paralelo y las tareas utilizan valores obtenidos por otras tareas,
+sabemos que podrían producirse si no lo evitamos de alguna manera. Aunque
+conocemos un método para hacerlo: podemos añadir una barrera.
+<div class=image id=img_05_03 style="width:80%;margin-left:10%">
+	<img src=imagenes/05_03_ppb.png style="width:95%"
+	alt="Representación de la ejecución de las tareas,
+	sincronizadas con un barrera, para que ninguna ejecute la segunda
+	fase sin que los valores que debe usar estén disponibles.">
+	<p span=caption>Representación de la ejecución de las tareas con
+	barrera
+</div>
+
+<p>Con esta medida, nos hemos asegurado de que todas las tareas completarán
+la primera fase, calcular <em>X</em>, <em>Y</em> y <em>Z</em>, de manera
+independiente, y solo cuando hayan terminado pasarán a la segunda fase, en la
+que utilizarán los valores de <em>X</em>, <em>Y</em> y <em>Z</em>.
+<p>Vamos a ver qué sucede con el coste de ejecución. Supongamos que los costes
+son: <b>1</b> para el cálculo de <em>X</em>, <b>2</b> para el de <em>Y</em>
+y <b>3</b> para el de <em>Z</em>; y al revés, <b>3</b> el de la segunda fase
+de la <em>tarea 0</em>, <b>2</b> el de la <em>1</em> y <b>1</b> el de la
+<em>3</em>.
+<p>Podemos ver que el camino crítico tendrá un coste de <b>6</b> porque el
+cálculo de <em>Z</em> cuesta <b>3</b> y el de la segunda fase de la <em>tarea
+0</em> es también de <b>3</b>. Así que la pregunta es: ¿podemos hacerlo
+mejor? Si nos fijamos bien, el cálculo del método <em>D</em> en la <em>tarea
+0</em> no necesita esperar a que la <em>tarea 3</em> haya calculado
+<em>Z</em>. En realidad, si nos fijamos en las flechas de la imagen, la
+<em>tarea 0</em> utiliza <em>Y</em> desde otra tarea; la <em>tarea 1</em>
+necesita <em>X</em> de la <em>tarea 0</em> y <em>Z</em> de la
+<em>tarea 2</em>; y la <em>tarea 3</em> necesita <em>Y</em> de la
+<em>tarea 1</em>.
+
+<p>Si utilizamos fáseres podemos organizar estas sincronizaciones de manera
+más apropiada a la de la barrera. Debemos utilizar un número mayor de
+fáseres de manera que, en este caso de ejemplo, podemos tener 3, uno por
+resultado. Cada tarea anunciará cuándo tiene calculado su valor con su
+llegada pero van a ser algo más quisquillosos con a qué esperan: la
+<em>tarea 0</em> esperará al fáser de <em>Y</em> y <b>solo al de
+<em>Y</em></b>; la <em>tarea 1</em> deberá esperar a los fáseres de
+<em>X</em> y <em>Z</em>; mientras que la <em>tarea 2</em> también esperará
+al fáser de <em>Y</em>.
+<div class=image id=img_05_04 style="width:80%;margin-left:10%">
+	<img src=imagenes/05_04_ppf.png style="width:95%"
+	alt='Representación de la ejecución de las tareas,
+	sincronizadas con tres fáseres, uno por valor. Tras calcular cada
+	uno de ellos realiza un "arrive" y, a continuación, ejecuta
+	el "awaitAdvance" para cada valor que debe utilizar.'>
+	<p class=caption>Representación de la ejecución de las tareas con
+	fáseres. Tened en cuenta que el <b>espera</b> de la imagen es un
+	<b>espera y avanza</b>.
+</div>
+
+
+<p>Si analizamos ahora el camino crítico nos encontramos con que éste es 5:
+hay dos posibilidades:
+<ul>
+	<li>las dos unidades de trabajo de la primera fase de la <em>tarea
+	1</em> y las tres de la segunda de la <em>tarea 0</em>
+	<li>las tres unidades de trabajo de la primera fase de la <em>tarea
+	2</em> y las dos de la segunda de la <em>tarea 1</em>
+</ul>
+<p>Este simple ejemplo demuestra que los fáseres pueden proporcionar mayor
+paralelismo que las barreras.
 
 			</section>
 
